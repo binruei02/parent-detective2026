@@ -2973,6 +2973,9 @@
           setupFirebaseListeners();
           setupPresenceTracker();
           console.log('Firebase Realtime Database successfully initialized for parent-detective-2026!');
+          if (currentRole === 'presenter') {
+            broadcastSpeakerState();
+          }
         } else {
           console.warn('Firebase SDK not available yet, using fallback.');
           loadLocalDemoData();
