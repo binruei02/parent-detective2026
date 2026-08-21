@@ -2638,6 +2638,38 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       MODAL 4: PRESENTER PASSWORD AUTHENTICATION MODAL (Password: eteacher)
+       ======================================================================== -->
+  <div class="modal-overlay" id="auth-pwd-modal">
+    <div class="modal-card" style="max-width: 440px; text-align: center;">
+      <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+      <div style="font-size: 2.5rem; margin-bottom: 6px;">🔐</div>
+      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">
+        講者主控授權驗證
+      </h3>
+      <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 18px; line-height: 1.5;">
+        為確保現場秩序，避免聽眾誤觸影響全場簡報同步，切換至<strong>「講者主控模式」</strong>需輸入授權密碼：
+      </p>
+      
+      <div style="margin-bottom: 18px;">
+        <input type="password" id="auth-pwd-input" class="custom-input" placeholder="請輸入講者授權密碼" autocomplete="off" style="font-size: 1.15rem; text-align: center; font-weight: 800; letter-spacing: 2px;" onkeydown="if(event.key==='Enter') submitPresenterAuth();" />
+        <div id="auth-pwd-error" style="color: var(--detective-red); font-size: 0.9rem; font-weight: 800; margin-top: 6px; display: none;">
+          ❌ 授權密碼錯誤，請重新輸入！
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="nav-ctrl-btn" style="flex: 1; background: var(--amber-accent); font-size: 1.05rem; padding: 12px;" onclick="submitPresenterAuth()">
+          🔓 確認解鎖
+        </button>
+        <button class="tool-btn" style="padding: 12px 20px; font-size: 1rem;" onclick="closeAuthModal()">
+          ✕ 取消
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Include Local Image Assets -->
   <script src="images_data.js"></script>
 
@@ -2687,13 +2719,27 @@
     }
 
     /* ==========================================================================
-       ROLE INITIALIZATION & DETECTION
+       ROLE INITIALIZATION & PASSWORD AUTHENTICATION (Password: eteacher)
        ========================================================================== */
+    const PRESENTER_PWD = 'eteacher';
+
     function checkUrlRole() {
       const params = new URLSearchParams(window.location.search);
       const roleParam = params.get('role');
+      const pwdParam = params.get('pwd');
+
+      if (pwdParam && pwdParam.trim().toLowerCase() === PRESENTER_PWD) {
+        localStorage.setItem('PRESENTER_AUTH_PASSED', 'true');
+      }
+
+      const isAuthed = (localStorage.getItem('PRESENTER_AUTH_PASSED') === 'true');
+
       if (roleParam === 'presenter' || roleParam === 'host' || roleParam === 'admin') {
-        setRole('presenter');
+        if (isAuthed || window.innerWidth >= 850) {
+          setRole('presenter');
+        } else {
+          setRole('audience');
+        }
       } else if (roleParam === 'audience' || roleParam === 'guest' || roleParam === 'student') {
         setRole('audience');
       } else {
@@ -2735,8 +2781,47 @@
       if (currentRole === 'presenter') {
         setRole('audience');
       } else {
+        // From Audience -> Presenter: Must verify password eteacher
+        openAuthModal();
+      }
+    }
+
+    function openAuthModal() {
+      const modal = document.getElementById('auth-pwd-modal');
+      const input = document.getElementById('auth-pwd-input');
+      const err = document.getElementById('auth-pwd-error');
+      if (err) err.style.display = 'none';
+      if (input) input.value = '';
+      if (modal) modal.classList.add('active');
+      setTimeout(() => { if (input) input.focus(); }, 150);
+    }
+
+    function closeAuthModal() {
+      playSound('click');
+      const modal = document.getElementById('auth-pwd-modal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function submitPresenterAuth() {
+      const input = document.getElementById('auth-pwd-input');
+      const err = document.getElementById('auth-pwd-error');
+      const val = input ? input.value.trim().toLowerCase() : '';
+
+      if (val === PRESENTER_PWD) {
+        playSound('correct');
+        launchConfetti();
+        localStorage.setItem('PRESENTER_AUTH_PASSED', 'true');
+        closeAuthModal();
         setRole('presenter');
-        broadcastSpeakerState();
+        showToast('👑 授權成功！已切換至【講者主控模式】。');
+        if (firebaseDb) broadcastSpeakerState();
+      } else {
+        playSound('wrong');
+        if (err) err.style.display = 'block';
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
       }
     }
 
