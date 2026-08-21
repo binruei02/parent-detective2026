@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>資訊識讀偵探事務所｜班親會互動共學網頁 (Firebase 高併發版)</title>
-  <meta name="description" content="在 AI 時代，練一雙會思考的眼睛！專為班親會宣講打造的卡通偵探風格互動網頁，支援 Firebase 萬人即時同步投票、提問便利貼牆與家庭數位約定證書。">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>資訊識讀偵探事務所｜班親會互動共學網頁</title>
+  <meta name="description" content="在 AI 時代，練一雙會思考的眼睛！專為班親會宣講打造的卡通偵探風格互動網頁，支援手機大字版型、Firebase 萬人即時同步投票、提問便利貼牆與家庭數位約定證書。">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chango&family=Noto+Sans+TC:wght@400;600;700;900&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chango&family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 
   <!-- Firebase SDK (Compat Version for Zero-Build CDN Execution) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -19,7 +19,7 @@
 
   <style>
     /* ==========================================================================
-       1. DESIGN SYSTEM & CSS VARIABLES (CARTOON DETECTIVE THEME)
+       1. DESIGN SYSTEM & CSS VARIABLES (RESPONSIVE & HIGH-LEGIBILITY)
        ========================================================================== */
     :root {
       --bg-desk: #F7F3E9;
@@ -36,18 +36,24 @@
       --stamp-green: #27AE60;
       --stamp-green-bg: #D4EFDF;
       --border-dark: #2B3A42;
-      --text-main: #2C3E50;
-      --text-muted: #64748B;
+      --text-main: #1E293B;
+      --text-muted: #475569;
       --cork-board: #EADBC8;
       --shadow-cartoon: 4px 4px 0px var(--border-dark);
       --shadow-cartoon-lg: 7px 7px 0px var(--border-dark);
       --shadow-cartoon-sm: 2px 2px 0px var(--border-dark);
       --border-thick: 3px solid var(--border-dark);
       --border-thin: 2px solid var(--border-dark);
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
       --radius-pill: 9999px;
+
+      /* Font scale: 18pt = 24px baseline for key text */
+      --font-hero: clamp(1.8rem, 4.5vw, 2.6rem);     /* 28px ~ 42px */
+      --font-section: clamp(1.4rem, 3.5vw, 1.9rem);  /* 22px ~ 30px */
+      --font-key: clamp(1.25rem, 3vw, 1.5rem);       /* 20px ~ 24px (18pt+) */
+      --font-body: clamp(1.05rem, 2.5vw, 1.2rem);    /* 17px ~ 19px */
     }
 
     * {
@@ -67,13 +73,14 @@
         linear-gradient(90deg, #E8DFCE 1px, transparent 1px);
       background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
       color: var(--text-main);
-      line-height: 1.6;
+      line-height: 1.65;
       min-height: 100vh;
       overflow-x: hidden;
+      font-size: var(--font-body);
       position: relative;
     }
 
-    /* Laser pointer / spotlight layer */
+    /* Laser spotlight */
     #spotlight-layer {
       position: fixed;
       top: 0;
@@ -89,26 +96,26 @@
     }
 
     /* ==========================================================================
-       2. TOP PRESENTER & UTILITY TOOLBAR
+       2. TOP TOOLBAR
        ========================================================================== */
     .toolbar-wrapper {
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(253, 249, 240, 0.96);
+      background: rgba(253, 249, 240, 0.98);
       backdrop-filter: blur(10px);
       border-bottom: var(--border-thick);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
     }
 
     .toolbar-container {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 8px 16px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -120,25 +127,22 @@
     }
 
     .brand-badge {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       background: var(--amber-accent);
       border: var(--border-thick);
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 24px;
       box-shadow: var(--shadow-cartoon-sm);
       transform: rotate(-3deg);
-      transition: transform 0.2s;
-    }
-    .brand-group:hover .brand-badge {
-      transform: rotate(0deg) scale(1.05);
+      flex-shrink: 0;
     }
 
     .brand-text h1 {
-      font-size: 1.15rem;
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
       font-weight: 900;
       color: var(--navy-dark);
       letter-spacing: 0.5px;
@@ -147,9 +151,9 @@
       gap: 6px;
     }
     .brand-text p {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .tool-actions {
@@ -162,10 +166,10 @@
     .tool-btn {
       background: var(--bg-card);
       border: var(--border-thin);
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: var(--radius-pill);
-      font-size: 0.82rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: 800;
       color: var(--navy-dark);
       cursor: pointer;
       display: inline-flex;
@@ -174,6 +178,7 @@
       box-shadow: var(--shadow-cartoon-sm);
       transition: all 0.15s ease;
       white-space: nowrap;
+      min-height: 42px;
     }
     .tool-btn:hover {
       transform: translate(-1px, -1px);
@@ -190,28 +195,20 @@
       border-color: var(--navy-dark);
     }
 
-    /* Live Cloud Sync Status Pill */
+    /* Cloud Sync Status Pill */
     .sync-status-pill {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       font-weight: 900;
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-radius: var(--radius-pill);
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      border: 1px solid rgba(0,0,0,0.15);
+      gap: 5px;
+      border: 2px solid var(--stamp-green);
       cursor: pointer;
       box-shadow: var(--shadow-cartoon-sm);
-    }
-    .sync-online {
       background: #D4EFDF;
       color: #196F3D;
-      border-color: #27AE60;
-    }
-    .sync-local {
-      background: #FCF3CF;
-      color: #B7950B;
-      border-color: #F1C40F;
     }
 
     /* Timer Widget */
@@ -219,9 +216,9 @@
       background: var(--navy-dark);
       color: #FFD166;
       font-family: 'Outfit', monospace;
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       font-weight: 900;
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: var(--radius-pill);
       border: var(--border-thin);
       display: flex;
@@ -234,19 +231,16 @@
       color: white;
       animation: pulseAlert 1s infinite alternate;
     }
-    @keyframes pulseAlert {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
-    }
 
     /* ==========================================================================
-       3. NAVIGATION TABS (CASE CHAPTERS)
+       3. NAVIGATION TABS
        ========================================================================== */
     .chapter-nav {
       background: #EFE7D8;
       border-bottom: var(--border-thick);
       overflow-x: auto;
       scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
     }
     .chapter-nav::-webkit-scrollbar {
       height: 6px;
@@ -259,26 +253,27 @@
       max-width: 1280px;
       margin: 0 auto;
       display: flex;
-      padding: 6px 16px 0;
+      padding: 6px 12px 0;
       gap: 6px;
+      width: max-content;
     }
 
     .chapter-tab {
       background: #DFD5C2;
-      color: #556575;
+      color: #334155;
       border: var(--border-thin);
       border-bottom: none;
-      border-radius: 10px 10px 0 0;
-      padding: 8px 16px;
-      font-size: 0.85rem;
-      font-weight: 700;
+      border-radius: 12px 12px 0 0;
+      padding: 10px 18px;
+      font-size: 1rem;
+      font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: all 0.2s;
       white-space: nowrap;
-      position: relative;
+      min-height: 46px;
     }
     .chapter-tab:hover {
       background: #F4ECE0;
@@ -288,29 +283,29 @@
       background: var(--bg-desk);
       color: var(--navy-dark);
       border-color: var(--border-dark);
-      padding-top: 10px;
+      padding-top: 12px;
       margin-top: -2px;
       font-weight: 900;
-      box-shadow: 0 -3px 0 var(--amber-accent);
+      box-shadow: 0 -4px 0 var(--amber-accent);
     }
     .chapter-tab .badge-num {
       background: var(--navy-dark);
       color: white;
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       border-radius: 6px;
-      padding: 1px 6px;
+      padding: 2px 7px;
     }
     .chapter-tab.active .badge-num {
       background: var(--amber-accent);
     }
 
     /* ==========================================================================
-       4. MAIN CONTAINER & PRESENTATION SLIDES / CHAPTERS
+       4. MAIN CONTAINER & PRESENTATION SLIDES
        ========================================================================== */
     .main-stage {
       max-width: 1200px;
-      margin: 28px auto 60px;
-      padding: 0 20px;
+      margin: 20px auto 90px;
+      padding: 0 16px;
     }
 
     .case-chapter-section {
@@ -330,19 +325,19 @@
       border: var(--border-thick);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-cartoon-lg);
-      padding: 32px;
+      padding: clamp(20px, 4vw, 36px);
       position: relative;
-      margin-bottom: 36px;
+      margin-bottom: 30px;
     }
 
     .folder-tag-tape {
       position: absolute;
-      top: -14px;
-      left: 36px;
+      top: -16px;
+      left: 24px;
       background: #FFEAA7;
       border: var(--border-thin);
-      padding: 4px 16px;
-      font-size: 0.8rem;
+      padding: 5px 18px;
+      font-size: 0.95rem;
       font-weight: 900;
       color: var(--border-dark);
       box-shadow: var(--shadow-cartoon-sm);
@@ -356,14 +351,15 @@
 
     .stamp-badge {
       display: inline-block;
-      padding: 6px 14px;
+      padding: 6px 16px;
       font-weight: 900;
       text-transform: uppercase;
       border: 3px dashed;
       border-radius: 8px;
       letter-spacing: 1px;
-      font-size: 0.85rem;
-      transform: rotate(-3deg);
+      font-size: 1rem;
+      transform: rotate(-2deg);
+      margin-bottom: 6px;
     }
     .stamp-fake {
       color: var(--detective-red);
@@ -382,17 +378,18 @@
     }
 
     .chapter-hero-title {
-      font-size: 2.1rem;
+      font-size: var(--font-hero);
       font-weight: 900;
       color: var(--navy-dark);
       line-height: 1.3;
-      margin: 12px 0 8px;
+      margin: 12px 0 10px;
     }
     .chapter-subtitle {
-      font-size: 1.1rem;
-      color: #475569;
-      font-weight: 600;
-      margin-bottom: 24px;
+      font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+      color: #334155;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.5;
     }
 
     .crime-tape {
@@ -403,10 +400,10 @@
         #1A252F 16px,
         #1A252F 32px
       );
-      height: 12px;
+      height: 14px;
       border: var(--border-thin);
       border-radius: 4px;
-      margin: 20px 0;
+      margin: 22px 0;
       box-shadow: var(--shadow-cartoon-sm);
     }
 
@@ -425,11 +422,11 @@
       .grid-2col, .grid-3col {
         grid-template-columns: 1fr;
       }
-      .chapter-hero-title {
-        font-size: 1.6rem;
+      .toolbar-container {
+        padding: 8px 12px;
       }
-      .case-folder {
-        padding: 20px;
+      .brand-text p {
+        display: none;
       }
     }
 
@@ -438,7 +435,7 @@
       border: var(--border-thick);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-cartoon);
-      padding: 20px;
+      padding: clamp(18px, 3vw, 26px);
       position: relative;
       transition: all 0.2s ease;
     }
@@ -452,19 +449,19 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 12px;
-      padding-bottom: 8px;
+      padding-bottom: 10px;
       border-bottom: 2px dashed #CBD5E1;
     }
     .evidence-number {
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       font-weight: 900;
       background: var(--navy-dark);
       color: white;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 6px;
     }
 
-    /* Image Inspection with Interactive Clue Pins */
+    /* Image Inspection */
     .inspection-viewer {
       position: relative;
       background: #E2E8F0;
@@ -477,36 +474,31 @@
       width: 100%;
       height: auto;
       display: block;
-      transition: filter 0.3s;
     }
 
     .clue-pin {
       position: absolute;
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       background: var(--detective-red);
       color: white;
-      border: 2px solid white;
+      border: 3px solid white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
       animation: pulsePin 1.5s infinite;
       z-index: 10;
       transform: translate(-50%, -50%);
     }
     @keyframes pulsePin {
       0% { transform: translate(-50%, -50%) scale(1); }
-      50% { transform: translate(-50%, -50%) scale(1.2); }
+      50% { transform: translate(-50%, -50%) scale(1.18); }
       100% { transform: translate(-50%, -50%) scale(1); }
-    }
-    .clue-pin:hover {
-      background: #C0392B;
-      transform: translate(-50%, -50%) scale(1.3) !important;
     }
 
     .clue-callout {
@@ -514,21 +506,17 @@
       bottom: 12px;
       left: 12px;
       right: 12px;
-      background: rgba(26, 41, 56, 0.92);
+      background: rgba(26, 41, 56, 0.95);
       color: white;
-      border: 2px solid #FFD166;
+      border: 3px solid #FFD166;
       border-radius: var(--radius-sm);
-      padding: 12px 16px;
-      font-size: 0.9rem;
+      padding: 16px;
+      font-size: var(--font-key);
       backdrop-filter: blur(8px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
       display: none;
       animation: slideUp 0.2s ease;
       z-index: 20;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(10px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
 
     /* Live Interactive Poll Component */
@@ -536,32 +524,33 @@
       background: #FFFDF9;
       border: var(--border-thick);
       border-radius: var(--radius-md);
-      padding: 20px;
+      padding: clamp(16px, 3vw, 24px);
       box-shadow: var(--shadow-cartoon);
       margin: 16px 0;
     }
     .poll-question {
-      font-size: 1.15rem;
+      font-size: var(--font-key);
       font-weight: 900;
       color: var(--navy-dark);
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      line-height: 1.45;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .poll-options {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .poll-btn {
       background: white;
       border: var(--border-thin);
       border-radius: var(--radius-sm);
-      padding: 12px 16px;
+      padding: 14px 18px;
       text-align: left;
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-size: var(--font-key);
+      font-weight: 800;
       color: var(--text-main);
       cursor: pointer;
       display: flex;
@@ -570,6 +559,7 @@
       transition: all 0.15s;
       position: relative;
       overflow: hidden;
+      min-height: 58px;
     }
     .poll-btn:hover {
       border-color: var(--amber-accent);
@@ -579,7 +569,7 @@
     .poll-btn.selected {
       background: #FDF2E9;
       border-color: var(--amber-accent);
-      border-width: 2px;
+      border-width: 3px;
       box-shadow: var(--shadow-cartoon-sm);
     }
     .poll-bar {
@@ -587,8 +577,8 @@
       top: 0;
       left: 0;
       bottom: 0;
-      background: rgba(230, 126, 34, 0.18);
-      border-right: 2px solid var(--amber-accent);
+      background: rgba(230, 126, 34, 0.2);
+      border-right: 3px solid var(--amber-accent);
       transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 1;
     }
@@ -597,19 +587,20 @@
       z-index: 2;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     .poll-badge-letter {
       background: var(--navy-dark);
       color: white;
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.85rem;
+      font-size: 1.05rem;
       font-weight: 900;
+      flex-shrink: 0;
     }
     .poll-percent {
       position: relative;
@@ -617,14 +608,14 @@
       font-family: 'Outfit', sans-serif;
       font-weight: 900;
       color: var(--amber-accent);
-      font-size: 1rem;
+      font-size: 1.15rem;
     }
 
     /* Flip Cards */
     .flip-card {
       background-color: transparent;
       perspective: 1000px;
-      min-height: 200px;
+      min-height: 220px;
       cursor: pointer;
     }
     .flip-card-inner {
@@ -664,17 +655,17 @@
       transform: rotateY(180deg);
     }
     .flip-card-icon {
-      font-size: 2.5rem;
-      margin-bottom: 8px;
+      font-size: 2.8rem;
+      margin-bottom: 6px;
     }
     .flip-hint {
       margin-top: 10px;
-      font-size: 0.75rem;
-      font-weight: 700;
+      font-size: 0.85rem;
+      font-weight: 800;
       color: var(--amber-accent);
       background: #FEF9E7;
-      padding: 2px 8px;
-      border-radius: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
       border: 1px solid var(--amber-accent);
     }
 
@@ -700,7 +691,7 @@
       background: white;
       border: var(--border-thick);
       border-radius: var(--radius-md);
-      padding: 20px 16px;
+      padding: 22px 16px;
       text-align: center;
       box-shadow: var(--shadow-cartoon);
       cursor: pointer;
@@ -718,40 +709,41 @@
     }
     .step-num-badge {
       position: absolute;
-      top: -12px;
+      top: -14px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--navy-dark);
       color: #FFEAA7;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 900;
-      padding: 2px 10px;
+      padding: 3px 12px;
       border-radius: var(--radius-pill);
       border: var(--border-thin);
     }
     .step-icon {
-      font-size: 2.2rem;
+      font-size: 2.5rem;
       margin: 8px 0;
     }
     .step-title {
-      font-size: 1.25rem;
+      font-size: var(--font-key);
       font-weight: 900;
       color: var(--navy-dark);
     }
     .step-desc {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       margin-top: 6px;
+      font-weight: 700;
     }
 
     .step-detail-viewer {
       background: #FFFDF9;
       border: var(--border-thick);
       border-radius: var(--radius-md);
-      padding: 24px;
-      margin-top: 16px;
+      padding: 26px;
+      margin-top: 18px;
       box-shadow: var(--shadow-cartoon);
-      border-left: 8px solid var(--amber-accent);
+      border-left: 10px solid var(--amber-accent);
     }
 
     /* 30-Second Challenge Module */
@@ -759,16 +751,16 @@
       background: white;
       border: var(--border-thick);
       border-radius: var(--radius-lg);
-      padding: 28px;
+      padding: clamp(20px, 4vw, 32px);
       box-shadow: var(--shadow-cartoon-lg);
       margin: 20px 0;
     }
     .quiz-timer-bar-wrap {
       width: 100%;
-      height: 12px;
+      height: 14px;
       background: #E2E8F0;
       border: var(--border-thin);
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
       margin-bottom: 20px;
     }
@@ -784,18 +776,19 @@
       background: white;
       border: var(--border-thick);
       border-radius: var(--radius-md);
-      padding: 14px 18px;
+      padding: 16px 20px;
       text-align: left;
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: var(--font-key);
+      font-weight: 800;
       color: var(--navy-dark);
       cursor: pointer;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       box-shadow: var(--shadow-cartoon-sm);
       transition: all 0.15s;
+      min-height: 60px;
     }
     .quiz-choice-btn:hover {
       background: #FFF9F0;
@@ -813,11 +806,11 @@
     }
 
     .explanation-box {
-      background: #F4F6F7;
-      border: var(--border-thin);
+      background: #F8FAFC;
+      border: var(--border-thick);
       border-radius: var(--radius-sm);
-      padding: 16px;
-      margin-top: 16px;
+      padding: 20px;
+      margin-top: 18px;
       display: none;
       animation: fadeInSlide 0.3s ease;
     }
@@ -825,21 +818,22 @@
     /* Role Matrix */
     .role-tabs {
       display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 18px;
       flex-wrap: wrap;
     }
     .role-tab-btn {
       background: #EAE6DF;
       border: var(--border-thick);
       border-radius: var(--radius-pill);
-      padding: 8px 20px;
-      font-size: 0.95rem;
+      padding: 10px 22px;
+      font-size: 1.05rem;
       font-weight: 900;
       color: var(--navy-dark);
       cursor: pointer;
       box-shadow: var(--shadow-cartoon-sm);
       transition: all 0.15s;
+      min-height: 48px;
     }
     .role-tab-btn.active {
       background: var(--navy-dark);
@@ -851,7 +845,7 @@
       background: white;
       border: var(--border-thick);
       border-radius: var(--radius-md);
-      padding: 24px;
+      padding: clamp(20px, 3.5vw, 30px);
       box-shadow: var(--shadow-cartoon);
     }
 
@@ -859,8 +853,8 @@
     .cert-preview-card {
       background: #FFFDF8;
       border: 6px solid #B8860B;
-      border-radius: 16px;
-      padding: 32px;
+      border-radius: 18px;
+      padding: clamp(20px, 4vw, 36px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       position: relative;
       background-image: radial-gradient(circle, #FCF3CF 10%, transparent 11%);
@@ -869,10 +863,10 @@
     }
     .cert-seal {
       position: absolute;
-      bottom: 24px;
-      right: 32px;
-      width: 90px;
-      height: 90px;
+      bottom: 20px;
+      right: 24px;
+      width: 96px;
+      height: 96px;
       border: 3px dashed #C0392B;
       border-radius: 50%;
       display: flex;
@@ -882,8 +876,8 @@
       color: #C0392B;
       font-weight: 900;
       transform: rotate(-15deg);
-      font-size: 0.75rem;
-      background: rgba(255,255,255,0.9);
+      font-size: 0.8rem;
+      background: rgba(255,255,255,0.92);
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
@@ -892,7 +886,7 @@
       background: white;
       border: var(--border-thick);
       border-radius: var(--radius-md);
-      padding: 18px;
+      padding: 22px;
       box-shadow: var(--shadow-cartoon);
       display: flex;
       flex-direction: column;
@@ -908,14 +902,14 @@
     }
     .ref-link-badge {
       display: inline-block;
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       font-weight: 900;
       background: #E8F8F5;
       color: #117A65;
       border: 1px solid #A3E4D7;
-      padding: 2px 8px;
-      border-radius: 4px;
-      margin-bottom: 8px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
       width: fit-content;
     }
     .ref-go-btn {
@@ -923,13 +917,13 @@
       color: white;
       border: none;
       border-radius: var(--radius-sm);
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      font-weight: 700;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 800;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 12px;
+      margin-top: 14px;
       align-self: flex-end;
     }
 
@@ -939,9 +933,9 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(26, 41, 56, 0.95);
+      background: rgba(26, 41, 56, 0.96);
       border-top: var(--border-thick);
-      padding: 10px 20px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -954,15 +948,16 @@
       color: white;
       border: 2px solid white;
       border-radius: var(--radius-pill);
-      padding: 8px 18px;
+      padding: 10px 22px;
       font-weight: 900;
-      font-size: 0.9rem;
+      font-size: 1.05rem;
       cursor: pointer;
       box-shadow: 0 3px 0 rgba(0,0,0,0.3);
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: all 0.15s;
+      min-height: 48px;
     }
     .nav-ctrl-btn:hover {
       background: #D35400;
@@ -981,13 +976,13 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.65);
       backdrop-filter: blur(4px);
       z-index: 2000;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
     }
     .modal-overlay.active {
       display: flex;
@@ -996,10 +991,10 @@
       background: white;
       border: var(--border-thick);
       border-radius: var(--radius-lg);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      max-width: 580px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+      max-width: 600px;
       width: 100%;
-      padding: 28px;
+      padding: clamp(20px, 4vw, 32px);
       position: relative;
       max-height: 90vh;
       overflow-y: auto;
@@ -1010,10 +1005,11 @@
       right: 16px;
       background: #E2E8F0;
       border: var(--border-thin);
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       font-weight: 900;
+      font-size: 1.1rem;
       cursor: pointer;
     }
 
@@ -1031,11 +1027,11 @@
       width: 100%;
       border: var(--border-thick);
       border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: 1rem;
-      font-weight: 600;
+      padding: 12px 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
       outline: none;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       background: #FFFDF9;
     }
     .custom-input:focus {
@@ -1081,7 +1077,7 @@
       <div class="tool-actions">
         <!-- Firebase Online Sync Status Pill -->
         <div class="sync-status-pill sync-online" id="sync-status-indicator" onclick="openFirebaseConfigModal()" title="點擊檢視 Firebase 雲端連線狀態">
-          <span id="sync-icon">🟢</span> <span id="sync-text">Firebase 萬人即時同步中</span>
+          <span id="sync-icon">🟢</span> <span id="sync-text">萬人即時同步中</span>
         </div>
 
         <!-- Presentation Timer -->
@@ -1090,9 +1086,6 @@
         </div>
         <button class="tool-btn" onclick="toggleTimer()" id="timer-toggle-btn" title="開始/暫停計時">
           ▶️ 計時
-        </button>
-        <button class="tool-btn" onclick="resetTimer(30)" title="重設為 30 分鐘">
-          🔄 重設
         </button>
 
         <!-- Laser Pointer / Spotlight -->
@@ -1106,7 +1099,7 @@
         </button>
 
         <!-- QR Code for Mobile Audience Sync -->
-        <button class="tool-btn" onclick="openQRModal()" title="展示手機掃碼加入互動">
+        <button class="tool-btn" onclick="openQRModal()" title="展示手機掃碼加入互動" style="background: var(--amber-accent); color: white;">
           📱 家長掃碼
         </button>
 
@@ -1119,7 +1112,7 @@
   </header>
 
   <!-- ========================================================================
-       CHAPTER NAVIGATION TABS
+       CHAPTER NAVIGATION TABS (MYSTERY TITLE FOR CHAPTER 1)
        ======================================================================== -->
   <nav class="chapter-nav">
     <div class="chapter-nav-inner">
@@ -1127,7 +1120,7 @@
         <span class="badge-num">00</span> 事務所簡報室
       </button>
       <button class="chapter-tab" onclick="switchChapter(1)">
-        <span class="badge-num">01</span> 山陀兒破冰懸案
+        <span class="badge-num">01</span> 停班停課破冰懸案
       </button>
       <button class="chapter-tab" onclick="switchChapter(2)">
         <span class="badge-num">02</span> 假訊息六大偽裝
@@ -1171,8 +1164,8 @@
             <p class="chapter-subtitle">給學生、家長與老師的資訊識讀共學課 ｜ 先停一下 ➔ 查清楚 ➔ 再分享</p>
           </div>
           <div style="text-align: right; background: white; padding: 12px 18px; border: var(--border-thin); border-radius: var(--radius-md); box-shadow: var(--shadow-cartoon-sm);">
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">今日破案偵探分隊</div>
-            <div style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark);" id="voter-count-display">🕵️ 現場連線偵探：即時同步中</div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: var(--text-muted);">今日破案偵探分隊</div>
+            <div style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);" id="voter-count-display">🕵️ 現場連線偵探：即時同步中</div>
           </div>
         </div>
 
@@ -1182,50 +1175,50 @@
           <div class="evidence-card" style="border-top: 6px solid var(--detective-red);">
             <div class="evidence-card-header">
               <span class="evidence-number">FOCUS 01</span>
-              <span style="font-size: 1.5rem;">📱</span>
+              <span style="font-size: 1.8rem;">📱</span>
             </div>
-            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 8px;">資訊很多，判斷更重要</h3>
-            <p style="font-size: 0.9rem; color: #475569;">每天在 LINE 群、社群平台被各種截圖、急訊洗版。面對看似官方的圖卡，我們該如何第一時間冷靜辨識？</p>
+            <h3 style="font-size: var(--font-key); font-weight: 900; margin-bottom: 8px;">資訊很多，判斷更重要</h3>
+            <p style="font-size: 1.05rem; color: #334155; line-height: 1.6;">每天在 LINE 群、社群平台被各種截圖、急訊洗版。面對看似官方的圖卡，我們該如何第一時間冷靜辨識？</p>
           </div>
 
           <div class="evidence-card" style="border-top: 6px solid var(--amber-accent);">
             <div class="evidence-card-header">
               <span class="evidence-number">FOCUS 02</span>
-              <span style="font-size: 1.5rem;">🤖</span>
+              <span style="font-size: 1.8rem;">🤖</span>
             </div>
-            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 8px;">AI 是陪練員，不是槍手</h3>
-            <p style="font-size: 0.9rem; color: #475569;">孩子寫作業用 AI 怎麼辦？引導孩子從「只拿答案」轉變成「提示思路與提問」，把核心思考留給自己。</p>
+            <h3 style="font-size: var(--font-key); font-weight: 900; margin-bottom: 8px;">AI 是陪練員，不是槍手</h3>
+            <p style="font-size: 1.05rem; color: #334155; line-height: 1.6;">孩子寫作業用 AI 怎麼辦？引導孩子從「只拿答案」轉變成「提示思路與提問」，把核心思考留給自己。</p>
           </div>
 
           <div class="evidence-card" style="border-top: 6px solid var(--stamp-green);">
             <div class="evidence-card-header">
               <span class="evidence-number">FOCUS 03</span>
-              <span style="font-size: 1.5rem;">🤝</span>
+              <span style="font-size: 1.8rem;">🤝</span>
             </div>
-            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 8px;">親師生同一條底線</h3>
-            <p style="font-size: 0.9rem; color: #475569;">不只沒收手機，而是建立家庭數位約定；一起查證、保護個資隱私，培養一輩子受用的資訊免疫力！</p>
+            <h3 style="font-size: var(--font-key); font-weight: 900; margin-bottom: 8px;">親師生同一條底線</h3>
+            <p style="font-size: 1.05rem; color: #334155; line-height: 1.6;">不只沒收手機，而是建立家庭數位約定；一起查證、保護個資隱私，培養一輩子受用的資訊免疫力！</p>
           </div>
         </div>
 
-        <div style="margin-top: 32px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-md); padding: 20px; text-align: center; box-shadow: var(--shadow-cartoon);">
-          <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">🕵️‍♂️ 各位家長偵探，準備好展開今日的「案件調查」了嗎？</h3>
-          <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 16px;">請透過鍵盤方向鍵 <code>→</code> 或點擊下方按鈕，進入第一宗破冰懸案！</p>
+        <div style="margin-top: 32px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-md); padding: 22px; text-align: center; box-shadow: var(--shadow-cartoon);">
+          <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">🕵️‍♂️ 各位家長偵探，準備好展開今日的「案件調查」了嗎？</h3>
+          <p style="font-size: 1.05rem; color: #475569; margin-bottom: 16px;">請透過鍵盤方向鍵 <code>→</code> 或點擊下方按鈕，進入第一宗破冰懸案！</p>
           <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(1)">
-            進入案件 01：山陀兒破冰懸案 ➔
+            進入破冰懸案 01：班群神祕急訊 ➔
           </button>
         </div>
       </div>
     </section>
 
     <!-- --------------------------------------------------------------------
-         CHAPTER 1: 案件一：嘉義市山陀兒颱風破冰懸案
+         CHAPTER 1: 案件一：停班停課破冰懸案（不提前爆雷，懸疑引導）
          -------------------------------------------------------------------- -->
     <section class="case-chapter-section" id="chapter-1">
       <div class="case-folder">
         <div class="folder-tag-tape">🚨 CASE FILE #01 ｜ 破冰懸案</div>
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <span class="stamp-badge stamp-fake">真實破案回顧：2024 山陀兒颱風</span>
+            <span class="stamp-badge stamp-warning">真實案件破案演練：某次颱風假前夕</span>
             <h2 class="chapter-hero-title">今晚 9:30，班群跳出這張圖...</h2>
             <p class="chapter-subtitle">「看起來很像官方，不代表來自官方」</p>
           </div>
@@ -1236,7 +1229,7 @@
           <!-- Left: Interactive Image Inspection -->
           <div>
             <div class="inspection-viewer" id="evidence-viewer">
-              <img id="fake-case-img" class="inspection-img" src="山陀兒假訊息.png" alt="嘉義市山陀兒假訊息截圖" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
+              <img id="fake-case-img" class="inspection-img" src="山陀兒假訊息.png" alt="班群流傳的停班停課圖卡" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
               
               <!-- Clue Pins -->
               <div class="clue-pin" style="top: 38%; left: 50%;" onclick="showClue(1)" title="點擊檢視破綻 1">1</div>
@@ -1245,11 +1238,11 @@
 
               <!-- Callout Box -->
               <div class="clue-callout" id="clue-callout-box">
-                <strong id="clue-title">🔍 破綻發現！</strong>
-                <p id="clue-desc" style="margin-top: 4px;"></p>
+                <strong id="clue-title" style="font-size: 1.35rem; color: #FFEAA7;">🔍 破綻發現！</strong>
+                <p id="clue-desc" style="margin-top: 6px; font-size: 1.15rem;"></p>
               </div>
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap;">
               <button class="tool-btn" onclick="showClue(1)">🔍 破綻 1：日期字體毛邊</button>
               <button class="tool-btn" onclick="showClue(2)">🔍 破綻 2：背景水滴套版</button>
               <button class="tool-btn" onclick="showClue(3)">🔍 破綻 3：缺少時間戳</button>
@@ -1260,14 +1253,14 @@
           <div>
             <div class="poll-box">
               <div class="poll-question">
-                <span>❓ 現場互動：如果是今晚 9:30 收到這張圖，你會怎麼做？</span>
+                <span>❓ 現場即時表態：如果是今晚 9:30 收到這張圖，你會怎麼做？</span>
               </div>
               <div class="poll-options">
                 <button class="poll-btn" onclick="castVote('case1', 'A')" id="vote-opt-A">
                   <div class="poll-bar" id="bar-A" style="width: 15%;"></div>
                   <div class="poll-content-text">
                     <span class="poll-badge-letter">A</span>
-                    <span>立刻轉傳給親友與班群</span>
+                    <span>立刻轉傳給親友與班群提醒大家</span>
                   </div>
                   <span class="poll-percent" id="pct-A">15%</span>
                 </button>
@@ -1285,7 +1278,7 @@
                   <div class="poll-bar" id="bar-C" style="width: 48%;"></div>
                   <div class="poll-content-text">
                     <span class="poll-badge-letter">C</span>
-                    <span>查官方人事行政總處／市府正式公告</span>
+                    <span>先查官方人事行政總處／市府公告</span>
                   </div>
                   <span class="poll-percent" id="pct-C">48%</span>
                 </button>
@@ -1294,31 +1287,28 @@
                   <div class="poll-bar" id="bar-D" style="width: 5%;"></div>
                   <div class="poll-content-text">
                     <span class="poll-badge-letter">D</span>
-                    <span>不管它，明天早上再說</span>
+                    <span>不管它，明天早上睡醒再看</span>
                   </div>
                   <span class="poll-percent" id="pct-D">5%</span>
                 </button>
               </div>
 
-              <div id="vote-feedback" style="margin-top: 14px; font-size: 0.88rem; color: var(--navy-dark); font-weight: 700; display: none;">
-                🎉 感謝您的即時表態！點選「C」是最標準的防護動作。
+              <div id="vote-feedback" style="margin-top: 14px; font-size: 1.15rem; color: var(--navy-dark); font-weight: 800; display: none;">
+                🎉 感謝各位偵探即時表態！點選「C」是最冷靜的標準防護動作。
               </div>
             </div>
 
-            <!-- Side-by-side Evidence Reveal -->
-            <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-cartoon);">
-              <h4 style="font-weight: 900; color: var(--navy-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                <span>🕵️ 真相還原：</span>
-                <span class="stamp-badge stamp-fake" style="font-size: 0.75rem; padding: 2px 8px;">後製竄改圖卡</span>
+            <!-- Side-by-side Evidence Reveal (Revealed on click) -->
+            <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-cartoon);" id="mystery-reveal-box">
+              <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+                🕵️ 案件真相還原：
               </h4>
-              <p style="font-size: 0.88rem; color: #475569;">
-                <strong>正式結果：</strong>嘉義市 10/1 <strong>正常上班、正常上課</strong>！市府火速發布澄清稿，並由警方追查不實訊息來源。
+              <p style="font-size: 1.05rem; color: #475569; margin-bottom: 12px;">
+                這張圖到底是真是假？造假者到底動了什麼手腳？
               </p>
-              <div style="margin-top: 10px; display: flex; gap: 8px;">
-                <button class="tool-btn" onclick="toggleComparisonModal()" style="background: #FEF9E7; border-color: var(--amber-accent);">
-                  🖼️ 點此查看 7/26 原始真圖 vs 10/1 改圖對照
-                </button>
-              </div>
+              <button class="nav-ctrl-btn" onclick="toggleComparisonModal()" style="width: 100%; justify-content: center; font-size: 1.15rem;">
+                🔍 點此公佈真相：對照原始真圖 ➔
+              </button>
             </div>
           </div>
         </div>
@@ -1326,7 +1316,7 @@
         <div class="crime-tape"></div>
 
         <!-- 3 Psychological Triggers (Flip Cards) -->
-        <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 14px;">
+        <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
           🧠 偵探心理破譯：為什麼大家會相信？（假訊息利用的不是無知，而是關心）
         </h3>
 
@@ -1335,13 +1325,13 @@
             <div class="flip-card-inner">
               <div class="flip-card-front">
                 <div class="flip-card-icon">⚡</div>
-                <h3 style="font-size: 1.4rem; font-weight: 900; color: var(--detective-red);">「 急 」</h3>
-                <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">現在就得決定明天怎麼安排</p>
+                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--detective-red);">「 急 」</h3>
+                <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">現在就得決定明天怎麼安排</p>
                 <span class="flip-hint">點擊翻牌看破譯 ➔</span>
               </div>
               <div class="flip-card-back">
-                <h4 style="font-size: 1.1rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">時間急迫陷阱</h4>
-                <p style="font-size: 0.85rem; line-height: 1.5;">
+                <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">時間急迫陷阱</h4>
+                <p style="font-size: 1rem; line-height: 1.6;">
                   晚上 9:30 大家正忙著安排隔天工作與接送孩子；<strong>越著急，越容易把「很像官方」直接當成「來自官方」！</strong>
                 </p>
               </div>
@@ -1352,13 +1342,13 @@
             <div class="flip-card-inner">
               <div class="flip-card-front">
                 <div class="flip-card-icon">😨</div>
-                <h3 style="font-size: 1.4rem; font-weight: 900; color: var(--amber-accent);">「 怕 」</h3>
-                <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">怕孩子不知道、怕自己漏接</p>
+                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--amber-accent);">「 怕 」</h3>
+                <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">怕孩子不知道、怕自己漏接</p>
                 <span class="flip-hint">點擊翻牌看破譯 ➔</span>
               </div>
               <div class="flip-card-back">
-                <h4 style="font-size: 1.1rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">FOMO 焦慮效應</h4>
-                <p style="font-size: 0.85rem; line-height: 1.5;">
+                <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">FOMO 焦慮效應</h4>
+                <p style="font-size: 1rem; line-height: 1.6;">
                   深怕漏接任何停課資訊影響孩子，這種出於關愛與責任的焦慮，被造假者精準利用為轉發動力。
                 </p>
               </div>
@@ -1369,13 +1359,13 @@
             <div class="flip-card-inner">
               <div class="flip-card-front">
                 <div class="flip-card-icon">🤝</div>
-                <h3 style="font-size: 1.4rem; font-weight: 900; color: var(--stamp-green);">「 熟 」</h3>
-                <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">訊息來自親友或班群很可信</p>
+                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--stamp-green);">「 熟 」</h3>
+                <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">訊息來自親友或班群很可信</p>
                 <span class="flip-hint">點擊翻牌看破譯 ➔</span>
               </div>
               <div class="flip-card-back">
-                <h4 style="font-size: 1.1rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">信任轉移盲點</h4>
-                <p style="font-size: 0.85rem; line-height: 1.5;">
+                <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">信任轉移盲點</h4>
+                <p style="font-size: 1rem; line-height: 1.6;">
                   我們信任班群裡的家長與朋友，但<strong>「對人的信任」不等於「訊息已被查證」</strong>。班群是傳播高速公路，不是查證起點！
                 </p>
               </div>
@@ -1383,7 +1373,7 @@
           </div>
         </div>
 
-        <div style="margin-top: 24px; background: #1A2938; color: #FFD166; padding: 16px 24px; border-radius: var(--radius-md); border: var(--border-thick); text-align: center; font-size: 1.1rem; font-weight: 900;">
+        <div style="margin-top: 24px; background: #1A2938; color: #FFD166; padding: 20px 24px; border-radius: var(--radius-md); border: var(--border-thick); text-align: center; font-size: var(--font-key); font-weight: 900;">
           💡 偵探金句：急著要你轉發的訊息，最值得你慢慢查！
         </div>
       </div>
@@ -1406,8 +1396,8 @@
               <span class="evidence-number">01</span>
               <span style="font-size: 1.4rem;">🏷️ 假標題</span>
             </div>
-            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">內容誇大、標題殺人</p>
-            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+            <p style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">內容誇大、標題殺人</p>
+            <div class="disguise-solution" style="margin-top: 12px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 10px 14px; font-size: 1.05rem;">
               <strong>🔎 偵探追查：</strong>「是哪個研究說的？原文刊載在哪裡？」
             </div>
           </div>
@@ -1418,8 +1408,8 @@
               <span class="evidence-number">02</span>
               <span style="font-size: 1.4rem;">⏳ 舊聞新傳</span>
             </div>
-            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">拿 3 年前的天災當今天</p>
-            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+            <p style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">拿 3 年前的天災當今天</p>
+            <div class="disguise-solution" style="margin-top: 12px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 10px 14px; font-size: 1.05rem;">
               <strong>🔎 偵探追查：</strong>「事件發生的確切時間、年份與地點？」
             </div>
           </div>
@@ -1430,8 +1420,8 @@
               <span class="evidence-number">03</span>
               <span style="font-size: 1.4rem;">✂️ 斷章取義</span>
             </div>
-            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">去頭去尾，只剪激動一句話</p>
-            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+            <p style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">去頭去尾，只剪激動一句話</p>
+            <div class="disguise-solution" style="margin-top: 12px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 10px 14px; font-size: 1.05rem;">
               <strong>🔎 偵探追查：</strong>「整段發言的前後脈絡是什麼？有沒有完整錄音錄影？」
             </div>
           </div>
@@ -1442,8 +1432,8 @@
               <span class="evidence-number">04</span>
               <span style="font-size: 1.4rem;">🎭 假帳號冒名</span>
             </div>
-            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">山寨粉專、名人群組</p>
-            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+            <p style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">山寨粉專、名人群組</p>
+            <div class="disguise-solution" style="margin-top: 12px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 10px 14px; font-size: 1.05rem;">
               <strong>🔎 偵探追查：</strong>「帳號是否有官方認證？有沒有官方網站公布的連結對應？」
             </div>
           </div>
@@ -1454,8 +1444,8 @@
               <span class="evidence-number">05</span>
               <span style="font-size: 1.4rem;">🎨 修圖與 AI 圖</span>
             </div>
-            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">換字、換臉、AI 生圖造謠</p>
-            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+            <p style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">換字、換臉、AI 生圖造謠</p>
+            <div class="disguise-solution" style="margin-top: 12px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 10px 14px; font-size: 1.05rem;">
               <strong>🔎 偵探追查：</strong>「能否找到原始未修圖照片？利用以圖搜圖比對！」
             </div>
           </div>
@@ -1466,14 +1456,14 @@
               <span class="evidence-number">06</span>
               <span style="font-size: 1.4rem;">🎙️ AI 深偽語音</span>
             </div>
-            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">模擬親友聲音緊急求救借錢</p>
-            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+            <p style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">模擬親友聲音緊急求救借錢</p>
+            <div class="disguise-solution" style="margin-top: 12px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 10px 14px; font-size: 1.05rem;">
               <strong>🔎 偵探追查：</strong>「掛斷電話，用彼此已知的安全管道或暗號反撥確認！」
             </div>
           </div>
         </div>
 
-        <div style="margin-top: 24px; text-align: center;">
+        <div style="margin-top: 28px; text-align: center;">
           <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(3)">
             掌握解法：學習「停、查、找、追」四字口訣 ➔
           </button>
@@ -1524,14 +1514,14 @@
 
         <!-- Dynamic Step Detail Viewer -->
         <div class="step-detail-viewer" id="step-detail-box">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-            <span style="font-size: 2rem;" id="step-detail-icon">🛑</span>
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+            <span style="font-size: 2.6rem;" id="step-detail-icon">🛑</span>
             <div>
-              <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark);" id="step-detail-title">第 1 步：停 (Stop) —— 守住第一道防線</h3>
-              <p style="font-size: 0.9rem; color: #64748B;" id="step-detail-sub">「轉發只要一秒，闢謠卻要跑斷腿」</p>
+              <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark);" id="step-detail-title">第 1 步：停 (Stop) —— 守住第一道防線</h3>
+              <p style="font-size: 1.1rem; color: #475569; font-weight: 700;" id="step-detail-sub">「轉發只要一秒，闢謠卻要跑斷腿」</p>
             </div>
           </div>
-          <div id="step-detail-body" style="font-size: 0.95rem; line-height: 1.7; color: var(--text-main);">
+          <div id="step-detail-body" style="font-size: 1.15rem; line-height: 1.8; color: var(--text-main);">
             <ul>
               <li><strong>深呼吸 3 秒：</strong>特別是當訊息讓你感到「極度憤怒」、「極度驚恐」或「急著想告訴親朋好友」時。</li>
               <li><strong>不點讚、不轉發：</strong>演算法會因為轉發擴散熱度，不轉傳就等於斬斷謠言傳播鏈。</li>
@@ -1540,7 +1530,7 @@
           </div>
         </div>
 
-        <div style="margin-top: 24px; text-align: center;">
+        <div style="margin-top: 28px; text-align: center;">
           <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(4)">
             立即進入實戰：30 秒限時大挑戰 ➔
           </button>
@@ -1554,14 +1544,14 @@
     <section class="case-chapter-section" id="chapter-4">
       <div class="case-folder">
         <div class="folder-tag-tape">⚡ SPEED TRIAL ｜ 限時大挑戰</div>
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <span class="stamp-badge stamp-warning">現場 30 秒限時任務</span>
             <h2 class="chapter-hero-title">測驗你的資訊識讀反應力！</h2>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-weight: 900; font-size: 1.1rem; color: var(--navy-dark);">🎯 挑戰得分：</span>
-            <span id="quiz-score-badge" style="background: var(--amber-accent); color: white; padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 900; font-size: 1.1rem;">0 分</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-weight: 900; font-size: 1.2rem; color: var(--navy-dark);">🎯 挑戰得分：</span>
+            <span id="quiz-score-badge" style="background: var(--amber-accent); color: white; padding: 6px 16px; border-radius: var(--radius-pill); font-weight: 900; font-size: 1.25rem;">0 分</span>
           </div>
         </div>
 
@@ -1571,12 +1561,12 @@
             <div class="quiz-timer-bar" id="quiz-progress-bar"></div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 14px;">
             <span class="evidence-number" id="quiz-q-num">QUESTION 01 / 04</span>
-            <span style="font-weight: 900; color: var(--detective-red);" id="quiz-countdown-num">⏳ 倒數 30 秒</span>
+            <span style="font-weight: 900; font-size: 1.15rem; color: var(--detective-red);" id="quiz-countdown-num">⏳ 倒數 30 秒</span>
           </div>
 
-          <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;" id="quiz-question-text">
+          <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 20px; line-height: 1.45;" id="quiz-question-text">
             【轉傳截圖】「教育部剛宣布：下學期開始，所有學生都必須購買 AI 平板。」你第一個要查的是？
           </h3>
 
@@ -1596,12 +1586,12 @@
           </div>
 
           <div class="explanation-box" id="quiz-explanation-box">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span id="quiz-result-stamp" class="stamp-badge stamp-official" style="font-size: 0.8rem;">✅ 回答正確</span>
-              <strong id="quiz-exp-title">偵探解析：</strong>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span id="quiz-result-stamp" class="stamp-badge stamp-official" style="font-size: 0.95rem;">✅ 回答正確</span>
+              <strong id="quiz-exp-title" style="font-size: var(--font-key); color: var(--navy-dark);">偵探解析：</strong>
             </div>
-            <p id="quiz-exp-text" style="font-size: 0.9rem; color: #334155; line-height: 1.5;"></p>
-            <button class="tool-btn" style="margin-top: 12px; background: var(--navy-dark); color: white;" onclick="nextQuizQuestion()" id="quiz-next-btn">
+            <p id="quiz-exp-text" style="font-size: 1.15rem; color: #1E293B; line-height: 1.6;"></p>
+            <button class="nav-ctrl-btn" style="margin-top: 14px;" onclick="nextQuizQuestion()" id="quiz-next-btn">
               下一題挑戰 ➔
             </button>
           </div>
@@ -1624,27 +1614,27 @@
           <div class="evidence-card" style="border-top: 6px solid var(--detective-red); background: #FFFDFD;">
             <div class="evidence-card-header">
               <span class="stamp-badge stamp-fake">❌ 只想拿答案的問法</span>
-              <span style="font-size: 1.5rem;">🤖➡️🥱</span>
+              <span style="font-size: 1.8rem;">🤖➡️🥱</span>
             </div>
-            <div style="background: #FADBD8; padding: 12px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 700; margin-bottom: 12px; color: #922B21;">
+            <div style="background: #FADBD8; padding: 14px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 800; margin-bottom: 12px; color: #922B21; font-size: 1.15rem;">
               「幫我把這份歷史作業心得寫完 500 字。」
             </div>
-            <h4 style="font-weight: 900; color: var(--navy-dark);">🚨 結果與代價：</h4>
-            <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">
-              雖然 5 秒快速交差，但自己完全不知道懂了什麼，甚至可能在全班討論時答不出所以然，<strong>思維能力逐漸退化</strong>。
+            <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">🚨 結果與代價：</h4>
+            <p style="font-size: 1.05rem; color: #475569; margin-top: 6px;">
+              雖然 5 秒快速交差，但自己完全不知道懂了什麼，甚至在被提問時答不出所以然，<strong>思維能力逐漸退化</strong>。
             </p>
           </div>
 
           <div class="evidence-card" style="border-top: 6px solid var(--stamp-green); background: #FDFEFE;">
             <div class="evidence-card-header">
               <span class="stamp-badge stamp-official">💡 陪練員問法（Socratic Coach）</span>
-              <span style="font-size: 1.5rem;">🤖🥊🧠</span>
+              <span style="font-size: 1.8rem;">🤖🥊🧠</span>
             </div>
-            <div style="background: #D4EFDF; padding: 12px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 700; margin-bottom: 12px; color: #196F3D;">
+            <div style="background: #D4EFDF; padding: 14px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 800; margin-bottom: 12px; color: #196F3D; font-size: 1.15rem;">
               「請先針對這篇課文問我 3 個關鍵問題，並根據我的回答提示我下一步思考方向。」
             </div>
-            <h4 style="font-weight: 900; color: var(--navy-dark);">🌟 結果與收穫：</h4>
-            <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">
+            <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">🌟 結果與收穫：</h4>
+            <p style="font-size: 1.05rem; color: #475569; margin-top: 6px;">
               把 AI 當成個人專屬教練，<strong>讓 AI 幫你想（提示/搭鷹架），而不是替你想（代寫）</strong>，思考主導權永遠在自己手上！
             </p>
           </div>
@@ -1653,7 +1643,7 @@
         <div class="crime-tape"></div>
 
         <!-- 3 Role Boundaries Matrix -->
-        <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 12px;">
+        <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 14px;">
           🎯 三種身分，同一條底線（點選切換視角）
         </h3>
 
@@ -1667,7 +1657,7 @@
           <!-- Populated by JS -->
         </div>
 
-        <div style="margin-top: 24px; text-align: center;">
+        <div style="margin-top: 28px; text-align: center;">
           <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(6)">
             建立家庭約定：產生專屬數位承諾證書 ➔
           </button>
@@ -1688,47 +1678,47 @@
         <div class="grid-2col" style="margin-top: 20px;">
           <!-- Left: Customizer Form -->
           <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-cartoon);">
-            <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
+            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
               ✍️ 簽署家庭偵探榮譽條款
             </h3>
 
-            <label style="font-size: 0.85rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 4px;">
+            <label style="font-size: 1rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 6px;">
               學生姓名：
             </label>
             <input type="text" id="cert-student-name" class="custom-input" placeholder="例如：林小明" value="林小明" oninput="updateCertPreview()">
 
-            <label style="font-size: 0.85rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 4px;">
+            <label style="font-size: 1rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 6px;">
               家長 / 導師簽名：
             </label>
             <input type="text" id="cert-parent-name" class="custom-input" placeholder="例如：林爸爸、王媽媽、陳老師" value="王家長" oninput="updateCertPreview()">
 
-            <div style="margin: 16px 0;">
-              <strong style="font-size: 0.9rem; color: var(--navy-dark); display: block; margin-bottom: 8px;">
+            <div style="margin: 18px 0;">
+              <strong style="font-size: 1.05rem; color: var(--navy-dark); display: block; margin-bottom: 10px;">
                 ✅ 勾選家庭承諾守則：
               </strong>
 
-              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
-                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-1">
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 1.05rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-1" style="width: 20px; height: 20px; margin-top: 3px;">
                 <span><strong>01. 情緒越急，越先停：</strong>遇到未查證急訊絕不盲目轉發。</span>
               </label>
 
-              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
-                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-2">
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 1.05rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-2" style="width: 20px; height: 20px; margin-top: 3px;">
                 <span><strong>02. 資訊越驚人，越找來源：</strong>凡事先查官方權威管道。</span>
               </label>
 
-              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
-                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-3">
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 1.05rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-3" style="width: 20px; height: 20px; margin-top: 3px;">
                 <span><strong>03. AI 越方便，越保留思考：</strong>絕不讓 AI 取代自己動腦。</span>
               </label>
 
-              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
-                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-4">
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 1.05rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-4" style="width: 20px; height: 20px; margin-top: 3px;">
                 <span><strong>04. 遇到困難，一起討論：</strong>不隱瞞個資風險，全家共查共學。</span>
               </label>
             </div>
 
-            <button class="tool-btn" style="width: 100%; background: var(--amber-accent); color: white; justify-content: center; padding: 12px; font-size: 1rem;" onclick="generateCertSuccess()">
+            <button class="nav-ctrl-btn" style="width: 100%; justify-content: center; font-size: 1.15rem;" onclick="generateCertSuccess()">
               🎖️ 確認完成簽署並蓋章！
             </button>
           </div>
@@ -1736,13 +1726,13 @@
           <!-- Right: Interactive Certificate Canvas / Card -->
           <div>
             <div class="cert-preview-card" id="certificate-print-zone">
-              <div style="font-size: 2.2rem; margin-bottom: 4px;">🏆</div>
-              <h2 style="font-size: 1.5rem; font-weight: 900; color: #B8860B; letter-spacing: 2px;">數位資訊小偵探・家庭約定書</h2>
-              <p style="font-size: 0.8rem; color: #888; margin-bottom: 14px;">2026 學年度 班親會資訊素養榮譽認證</p>
+              <div style="font-size: 2.6rem; margin-bottom: 4px;">🏆</div>
+              <h2 style="font-size: 1.6rem; font-weight: 900; color: #B8860B; letter-spacing: 2px;">數位資訊小偵探・家庭約定書</h2>
+              <p style="font-size: 0.9rem; color: #888; margin-bottom: 16px;">2026 學年度 班親會資訊素養榮譽認證</p>
               
-              <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-dark); line-height: 1.6; margin: 16px 0; text-align: left; background: rgba(255,255,255,0.7); padding: 12px 16px; border-radius: 8px; border: 1px dashed #D4AF37;">
-                茲證明小偵探 <strong style="color: var(--detective-red); font-size: 1.2rem;" id="preview-student">林小明</strong> 與 家長 <strong style="color: var(--navy-dark); font-size: 1.1rem;" id="preview-parent">王家長</strong>，共同承諾落實：
-                <ul id="preview-pledges-list" style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem; color: #475569;">
+              <div style="font-size: 1.15rem; font-weight: 700; color: var(--navy-dark); line-height: 1.7; margin: 16px 0; text-align: left; background: rgba(255,255,255,0.85); padding: 16px; border-radius: 10px; border: 1px dashed #D4AF37;">
+                茲證明小偵探 <strong style="color: var(--detective-red); font-size: 1.35rem;" id="preview-student">林小明</strong> 與 家長 <strong style="color: var(--navy-dark); font-size: 1.25rem;" id="preview-parent">王家長</strong>，共同承諾落實：
+                <ul id="preview-pledges-list" style="margin-top: 10px; padding-left: 24px; font-size: 1.05rem; color: #334155;">
                   <li>情緒越急，越先停下來。</li>
                   <li>資訊越驚人，越找原始來源。</li>
                   <li>AI 越方便，越保留獨立思考。</li>
@@ -1750,7 +1740,7 @@
                 </ul>
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; font-size: 0.85rem; color: #555; text-align: left;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; font-size: 0.95rem; color: #555; text-align: left;">
                 <div>
                   <div>發證單位：資訊識讀特搜事務所</div>
                   <div>簽署日期：<span id="cert-date-text">2026/08/21</span></div>
@@ -1759,22 +1749,22 @@
 
               <div class="cert-seal">
                 <span>★ 榮譽特搜 ★</span>
-                <span style="font-size: 1.1rem;">已認證</span>
+                <span style="font-size: 1.15rem;">已認證</span>
                 <span>VERIFIED</span>
               </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 12px;">
-              <button class="tool-btn" onclick="window.print()" style="flex: 1; justify-content: center;">
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+              <button class="tool-btn" onclick="window.print()" style="flex: 1; justify-content: center; font-size: 1.05rem;">
                 🖨️ 列印 / 另存 PDF
               </button>
             </div>
           </div>
         </div>
 
-        <div style="margin-top: 24px; text-align: center;">
+        <div style="margin-top: 28px; text-align: center;">
           <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(7)">
-            進入最後急救包：官方查核與通報資源直連 ➔
+            進入急救包：官方查核與通報資源直連 ➔
           </button>
         </div>
       </div>
@@ -1796,8 +1786,8 @@
           <a href="https://www.dgpa.gov.tw/typh/daily/nds.html" target="_blank" rel="noopener noreferrer" class="ref-link-card">
             <div>
               <span class="ref-link-badge">🏛️ 停班停課唯一基準</span>
-              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">行政院人事行政總處</h3>
-              <p style="font-size: 0.85rem; color: #64748B;">天然災害停止上班及上課情形官方即時公告，最權威的第一手資訊來源。</p>
+              <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">行政院人事行政總處</h3>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.5;">天然災害停止上班及上課情形官方即時公告，最權威的第一手資訊來源。</p>
             </div>
             <div class="ref-go-btn">前往官網 ↗</div>
           </a>
@@ -1806,8 +1796,8 @@
           <a href="https://tfc-taiwan.org.tw/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
             <div>
               <span class="ref-link-badge">🔍 IFCN 國際認證</span>
-              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">台灣事實查核中心 (TFC)</h3>
-              <p style="font-size: 0.85rem; color: #64748B;">專業深度查核報告、時事假訊息闢謠、AI 深度偽造圖影鑑定專區。</p>
+              <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">台灣事實查核中心 (TFC)</h3>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.5;">專業深度查核報告、時事假訊息闢謠、AI 深度偽造圖影鑑定專區。</p>
             </div>
             <div class="ref-go-btn">前往官網 ↗</div>
           </a>
@@ -1816,8 +1806,8 @@
           <a href="https://www.mygopen.com/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
             <div>
               <span class="ref-link-badge">🛡️ LINE 闢謠助手</span>
-              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">MyGoPen 麥擱騙</h3>
-              <p style="font-size: 0.85rem; color: #64748B;">長輩群組熱門假訊息、網路詐騙手法即時破解，提供 LINE 官方查證機器人。</p>
+              <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">MyGoPen 麥擱騙</h3>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.5;">長輩群組熱門假訊息、網路詐騙手法即時破解，提供 LINE 官方查證機器人。</p>
             </div>
             <div class="ref-go-btn">前往官網 ↗</div>
           </a>
@@ -1826,8 +1816,8 @@
           <a href="https://cofacts.tw/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
             <div>
               <span class="ref-link-badge">🌐 群眾協作闢謠</span>
-              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">Cofacts 真的假的</h3>
-              <p style="font-size: 0.85rem; color: #64748B;">開源群眾協作訊息查核資料庫，轉傳訊息直接自動比對多方回覆。</p>
+              <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">Cofacts 真的假的</h3>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.5;">開源群眾協作訊息查核資料庫，轉傳訊息直接自動比對多方回覆。</p>
             </div>
             <div class="ref-go-btn">前往官網 ↗</div>
           </a>
@@ -1836,8 +1826,8 @@
           <a href="https://alerts.ncdr.nat.gov.tw/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
             <div>
               <span class="ref-link-badge">⚠️ 國家級即時示警</span>
-              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">國家災害防救科技中心</h3>
-              <p style="font-size: 0.85rem; color: #64748B;">地震、颱風、豪雨、水庫洩洪等國家級防災示警統合發布平台。</p>
+              <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">國家災害防救科技中心</h3>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.5;">地震、颱風、豪雨、水庫洩洪等國家級防災示警統合發布平台。</p>
             </div>
             <div class="ref-go-btn">前往官網 ↗</div>
           </a>
@@ -1846,19 +1836,19 @@
           <a href="https://depart.moe.gov.tw/ed2700/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
             <div>
               <span class="ref-link-badge">🤖 教育部官方指引</span>
-              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">教育部資訊及科技教育司</h3>
-              <p style="font-size: 0.85rem; color: #64748B;">中小學生成式 AI 輔助教學指引、校園資訊素養與倫理學習資源。</p>
+              <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">教育部資訊及科技教育司</h3>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.5;">中小學生成式 AI 輔助教學指引、校園資訊素養與倫理學習資源。</p>
             </div>
             <div class="ref-go-btn">前往官網 ↗</div>
           </a>
 
         </div>
 
-        <div style="margin-top: 24px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-md); padding: 20px; text-align: center; box-shadow: var(--shadow-cartoon);">
-          <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark);">
+        <div style="margin-top: 28px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-md); padding: 22px; text-align: center; box-shadow: var(--shadow-cartoon);">
+          <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">
             🌟 「科技會一直變；把判斷力留在自己手上！」
           </h3>
-          <p style="font-size: 0.95rem; color: #475569; margin-top: 6px;">
+          <p style="font-size: 1.05rem; color: #334155; margin-top: 8px;">
             最珍貴的能力，不是永遠不被騙；而是發現自己可能被影響時，願意停下來、願意查、也願意重新判斷。謝謝大家！
           </p>
         </div>
@@ -1878,13 +1868,13 @@
         <div class="grid-2col" style="margin-top: 20px;">
           <!-- Submit Form -->
           <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-cartoon);">
-            <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 14px;">
+            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
               📝 發表提問或給孩子的一句話
             </h3>
 
             <input type="text" id="feedback-name" class="custom-input" placeholder="您的稱呼（例如：二年一班小華媽媽）">
             
-            <select id="feedback-tag" class="custom-input" style="font-weight: 700;">
+            <select id="feedback-tag" class="custom-input" style="font-weight: 800;">
               <option value="💡 心得共學">💡 心得共學</option>
               <option value="❓ 數位教養提問">❓ 數位教養提問</option>
               <option value="🤖 AI 使用困惑">🤖 AI 使用困惑</option>
@@ -1893,18 +1883,18 @@
 
             <textarea id="feedback-msg" class="custom-input" rows="4" placeholder="請輸入您想分享的心得或問題..."></textarea>
 
-            <button class="tool-btn" style="width: 100%; background: var(--navy-dark); color: white; justify-content: center; padding: 12px; font-size: 1rem;" onclick="postFeedback()">
+            <button class="nav-ctrl-btn" style="width: 100%; justify-content: center; font-size: 1.15rem;" onclick="postFeedback()">
               🚀 送出便利貼留言
             </button>
           </div>
 
           <!-- Live Sticky Wall -->
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <strong style="font-size: 1.1rem; color: var(--navy-dark);">📌 即時留言展示板</strong>
-              <span style="font-size: 0.8rem; color: #64748B;" id="feedback-count">即時連線推播中</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <strong style="font-size: var(--font-key); color: var(--navy-dark);">📌 即時留言展示板</strong>
+              <span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 700;" id="feedback-count">即時連線推播中</span>
             </div>
-            <div id="sticky-notes-wall" style="display: flex; flex-direction: column; gap: 12px; max-height: 460px; overflow-y: auto; padding-right: 4px;">
+            <div id="sticky-notes-wall" style="display: flex; flex-direction: column; gap: 14px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
               <!-- Sticky Notes dynamically inserted here -->
             </div>
           </div>
@@ -1918,70 +1908,67 @@
        PRESENTER BOTTOM STICKY CONTROLLER
        ======================================================================== -->
   <footer class="presenter-bottom-bar">
-    <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <button class="nav-ctrl-btn" onclick="prevChapter()" id="btn-prev-chap">
         ◀ 上一單元
       </button>
-      <span style="font-weight: 900; font-size: 0.9rem;" id="current-chapter-indicator">00 / 08</span>
+      <span style="font-weight: 900; font-size: 1rem;" id="current-chapter-indicator">00 / 08</span>
       <button class="nav-ctrl-btn" onclick="nextChapter()" id="btn-next-chap">
         下一單元 ▶
       </button>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span style="font-size: 0.85rem; color: #CBD5E1;" class="d-none-mobile">
-        💡 鍵盤 <code>←</code> <code>→</code> 切換 ｜ <code>Space</code> 答題
-      </span>
-      <button class="tool-btn" onclick="openFirebaseConfigModal()" style="background: rgba(255,255,255,0.15); color: white; border-color: rgba(255,255,255,0.3);">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="tool-btn" onclick="openFirebaseConfigModal()" style="background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.4);">
         ⚙️ 雲端設定
       </button>
     </div>
   </footer>
 
   <!-- ========================================================================
-       MODAL 1: SIDE-BY-SIDE EVIDENCE COMPARISON MODAL
+       MODAL 1: SIDE-BY-SIDE EVIDENCE COMPARISON MODAL (REVEALS TRUTH)
        ======================================================================== -->
   <div class="modal-overlay" id="comparison-modal">
-    <div class="modal-card" style="max-width: 780px;">
+    <div class="modal-card" style="max-width: 820px;">
       <button class="modal-close-btn" onclick="toggleComparisonModal()">✕</button>
       <span class="stamp-badge stamp-official">物證 01 號：原始真圖 vs 後製變造圖</span>
-      <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin: 10px 0 16px;">
-        🔍 嘉義市政府圖卡 變造對照分析
+      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin: 10px 0 16px;">
+        🔍 嘉義市政府圖卡 變造真相公佈
       </h3>
       
       <div class="grid-2col">
         <div>
-          <div style="background: var(--stamp-green-bg); padding: 6px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 6px;">
-            <strong style="color: #196F3D;">✅ 2024/07/26 凱米颱風（原始官方）</strong>
+          <div style="background: var(--stamp-green-bg); padding: 8px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 8px;">
+            <strong style="color: #196F3D; font-size: 1.05rem;">✅ 2024/07/26 凱米颱風（原始官方真圖）</strong>
           </div>
           <img src="477158714_1144428560370864_6678778382469093885_n.jpg" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="原始真圖" onerror="this.src=CASE_IMAGES.real_0726 || ''">
         </div>
 
         <div>
-          <div style="background: var(--detective-red-bg); padding: 6px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 6px;">
-            <strong style="color: #922B21;">❌ 2024/10/01 山陀兒（變造假圖）</strong>
+          <div style="background: var(--detective-red-bg); padding: 8px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 8px;">
+            <strong style="color: #922B21; font-size: 1.05rem;">❌ 2024/10/01 山陀兒（變造假圖）</strong>
           </div>
           <img src="山陀兒假訊息.png" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="變造假圖" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
         </div>
       </div>
 
-      <div style="margin-top: 16px; background: #FFF9F0; border: var(--border-thin); border-radius: var(--radius-sm); padding: 12px; font-size: 0.9rem;">
-        <strong>破案摘要：</strong>造假者擷取 7 月 26 日的舊圖，使用修圖軟體塗改「7/26(五)」為「10/1(二)」。由於背景、人物與官方模板完全一致，民眾極難單憑肉眼區分，<strong>唯一可靠方法是回到官方人事行政總處確認！</strong>
+      <div style="margin-top: 18px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-sm); padding: 16px; font-size: 1.15rem; line-height: 1.6;">
+        <strong style="color: var(--detective-red);">破案真相：</strong>造假者擷取 7 月 26 日凱米颱風的舊圖，使用修圖軟體將「7/26(五)」塗改成「10/1(二)」。由於背景、人物與官方模板完全一致，民眾極難單憑肉眼區分，<strong>唯一可靠方法是回到官方人事行政總處確認！</strong>
       </div>
     </div>
   </div>
 
   <!-- ========================================================================
-       MODAL 2: MOBILE AUDIENCE QR CODE MODAL (REAL SCANNABLE DYNAMIC QR)
+       MODAL 2: MOBILE AUDIENCE QR CODE MODAL
        ======================================================================== -->
   <div class="modal-overlay" id="qr-modal">
     <div class="modal-card" style="text-align: center; max-width: 500px;">
       <button class="modal-close-btn" onclick="openQRModal()">✕</button>
-      <div style="font-size: 2.2rem; margin-bottom: 4px;">📱</div>
-      <h3 style="font-size: 1.35rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">
+      <div style="font-size: 2.4rem; margin-bottom: 4px;">📱</div>
+      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
         現場家長手機掃碼加入互動
       </h3>
-      <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 14px;">
+      <p style="font-size: 1.05rem; color: #475569; margin-bottom: 16px;">
         請家長拿出手機打開相機或 LINE 掃描下方 QR Code，即刻連線參與即時投票！
       </p>
 
@@ -1990,13 +1977,13 @@
         <div id="qrcode-container" style="display: flex; justify-content: center; align-items: center;"></div>
       </div>
 
-      <!-- Live URL Input / Customizer -->
-      <div style="margin-top: 16px; text-align: left;">
-        <label style="font-size: 0.82rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 4px;">
+      <!-- Live URL Input -->
+      <div style="margin-top: 18px; text-align: left;">
+        <label style="font-size: 0.95rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 6px;">
           🔗 宣講同步網址（可自由修改或貼上短網址，QR Code 即時重繪）：
         </label>
-        <input type="text" id="qr-url-input" class="custom-input" style="font-size: 0.88rem; margin-bottom: 4px;" oninput="generateRealQRCode(this.value)">
-        <p style="font-size: 0.78rem; color: #64748B;" id="qr-hint-text">
+        <input type="text" id="qr-url-input" class="custom-input" style="font-size: 0.95rem; margin-bottom: 6px;" oninput="generateRealQRCode(this.value)">
+        <p style="font-size: 0.85rem; color: #64748B;" id="qr-hint-text">
           💡 手機掃碼後將即時進入同步互動畫面，可即時投票與留言！
         </p>
       </div>
@@ -2009,33 +1996,33 @@
   <div class="modal-overlay" id="firebase-modal">
     <div class="modal-card">
       <button class="modal-close-btn" onclick="openFirebaseConfigModal()">✕</button>
-      <div style="font-size: 2rem; margin-bottom: 6px;">⚙️</div>
-      <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+      <div style="font-size: 2.2rem; margin-bottom: 6px;">⚙️</div>
+      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
         Firebase 雲端萬人同步設定
       </h3>
-      <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 14px;">
+      <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 16px;">
         專案已綁定：<code>parent-detective-2026</code>（新加坡即時資料庫節點）
       </p>
 
-      <textarea id="firebase-config-input" class="custom-input" rows="7" style="font-family: monospace; font-size: 0.82rem;"></textarea>
+      <textarea id="firebase-config-input" class="custom-input" rows="7" style="font-family: monospace; font-size: 0.9rem;"></textarea>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <button class="tool-btn" style="flex: 1; background: var(--stamp-green); color: white; justify-content: center; padding: 10px;" onclick="saveCustomFirebaseConfig()">
+      <div style="display: flex; gap: 10px; margin-bottom: 18px;">
+        <button class="tool-btn" style="flex: 1; background: var(--stamp-green); color: white; justify-content: center; padding: 12px; font-size: 1.05rem;" onclick="saveCustomFirebaseConfig()">
           💾 儲存並連線
         </button>
-        <button class="tool-btn" style="background: #F2F4F7; justify-content: center; padding: 10px;" onclick="clearFirebaseConfig()">
+        <button class="tool-btn" style="background: #F2F4F7; justify-content: center; padding: 12px; font-size: 1.05rem;" onclick="clearFirebaseConfig()">
           🔄 還原專案預設
         </button>
       </div>
 
-      <div style="border-top: var(--border-thin); padding-top: 14px; text-align: left;">
-        <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--detective-red); margin-bottom: 6px;">
+      <div style="border-top: var(--border-thin); padding-top: 16px; text-align: left;">
+        <h4 style="font-size: 1.1rem; font-weight: 900; color: var(--detective-red); margin-bottom: 8px;">
           🗑️ 講者場次重置專區
         </h4>
-        <p style="font-size: 0.8rem; color: #64748B; margin-bottom: 8px;">
+        <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 10px;">
           若是開啟新的一場宣講，可點擊下方按鈕清空 Firebase 與本機上的投票與留言數據：
         </p>
-        <button class="tool-btn" style="background: #FDEDEC; border-color: var(--detective-red); color: var(--detective-red); width: 100%; justify-content: center;" onclick="resetLiveSessionData()">
+        <button class="tool-btn" style="background: #FDEDEC; border-color: var(--detective-red); color: var(--detective-red); width: 100%; justify-content: center; font-size: 1.05rem; padding: 12px;" onclick="resetLiveSessionData()">
           ⚠️ 一鍵清空目前現場投票與留言
         </button>
       </div>
@@ -2116,7 +2103,7 @@
           if (pill) {
             pill.className = 'sync-status-pill sync-online';
             document.getElementById('sync-icon').innerText = '🟢';
-            document.getElementById('sync-text').innerText = 'Firebase 萬人即時同步中';
+            document.getElementById('sync-text').innerText = '萬人即時同步中';
           }
 
           // Set Up Realtime Listeners
@@ -2124,7 +2111,7 @@
           setupPresenceTracker();
           console.log('Firebase Realtime Database successfully initialized for parent-detective-2026!');
         } else {
-          console.warn('Firebase SDK not available yet, will retry.');
+          console.warn('Firebase SDK not available yet, using fallback.');
           loadLocalDemoData();
         }
       } catch (err) {
@@ -2179,7 +2166,7 @@
           if (pill) {
             pill.className = 'sync-status-pill sync-online';
             document.getElementById('sync-icon').innerText = '🟢';
-            document.getElementById('sync-text').innerText = 'Firebase 萬人即時同步中';
+            document.getElementById('sync-text').innerText = '萬人即時同步中';
           }
         }
       });
@@ -2452,7 +2439,7 @@
     }
 
     /* ==========================================================================
-       CASE 1: CLUES & INTERACTIVE POLL
+       CASE 1: CLUES & INTERACTIVE POLL (MYSTERY SUSPENSE)
        ========================================================================== */
     const cluesData = {
       1: {
@@ -2461,11 +2448,11 @@
       },
       2: {
         title: "🔍 破綻 2：背景水滴套版一模一樣",
-        desc: "背景的粉紫雨滴光澤，與 2024 年 7 月 26 日凱米颱風的官方宣導圖完全一模一樣，實為舊圖換字！"
+        desc: "背景的粉紫雨滴光澤，與先前另一次颱風的官方宣導圖完全一模一樣，實為舊圖換字！"
       },
       3: {
         title: "🔍 破綻 3：缺乏官方發布時間戳記",
-        desc: "官方正式宣導圖右下角皆會附上精確發布年月日時（如 2024/07/25 20:00 發布），此圖遭蓄意裁切！"
+        desc: "官方正式宣導圖右下角皆會附上精確發布年月日時（如 20:00 發布），此圖遭蓄意裁切！"
       }
     };
 
@@ -2540,23 +2527,23 @@
         if (typeof QRCode !== 'undefined') {
           qrCodeInstance = new QRCode(container, {
             text: url,
-            width: 210,
-            height: 210,
+            width: 220,
+            height: 220,
             colorDark: "#1A2938",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.M
           });
         } else {
           const img = document.createElement('img');
-          img.src = "https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=" + encodeURIComponent(url);
+          img.src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(url);
           img.alt = "QR Code";
-          img.style.width = "210px";
-          img.style.height = "210px";
+          img.style.width = "220px";
+          img.style.height = "220px";
           container.appendChild(img);
         }
       } catch (err) {
         console.error("QR Code error:", err);
-        container.innerHTML = '<p style="color:red; font-size:0.8rem;">QR Code 產生失敗，請確認網址格式</p>';
+        container.innerHTML = '<p style="color:red; font-size:0.9rem;">QR Code 產生失敗，請確認網址格式</p>';
       }
     }
 
@@ -2785,71 +2772,71 @@
        ========================================================================== */
     const roleDossiers = {
       student: `
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <span style="font-size: 2.2rem;">🎒</span>
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+          <span style="font-size: 2.5rem;">🎒</span>
           <div>
-            <h4 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark);">學生代表：做會提問、會查證、會署名的人</h4>
-            <p style="font-size: 0.85rem; color: #64748B;">「我不是 AI 的代言人；我是成果的負責人！」</p>
+            <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">學生代表：做會提問、會查證、會署名的人</h4>
+            <p style="font-size: 1rem; color: #64748B; font-weight: 700;">「我不是 AI 的代言人；我是成果的負責人！」</p>
           </div>
         </div>
-        <div class="grid-3col" style="margin-top: 14px;">
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--detective-red);">🚫 不照單全收</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">AI 給出的第一個答案絕不是最後答案，必須親自尋找第二出處核對事實。</p>
+        <div class="grid-3col" style="margin-top: 16px;">
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--detective-red); font-size: 1.1rem;">🚫 不照單全收</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">AI 給出的第一個答案絕不是最後答案，必須親自尋找第二出處核對事實。</p>
           </div>
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--amber-accent);">🗣️ 說得出思考過程</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">清楚說明：AI 幫了什麼大綱？我自己改寫了什麼？我核實了哪些數據？</p>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--amber-accent); font-size: 1.1rem;">🗣️ 說得出思考過程</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">清楚說明：AI 幫了什麼大綱？我自己改寫了什麼？我核實了哪些數據？</p>
           </div>
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--stamp-green);">🛡️ 保護自己與同學</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">絕不把個人、家人、同學或老師的姓名、照片、成績與隱私資料輸入 AI 模型。</p>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--stamp-green); font-size: 1.1rem;">🛡️ 保護自己與同學</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">絕不把個人、家人、同學或老師的姓名、照片、成績與隱私資料輸入 AI 模型。</p>
           </div>
         </div>
       `,
       parent: `
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <span style="font-size: 2.2rem;">👨‍👩‍👧</span>
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+          <span style="font-size: 2.5rem;">👨‍👩‍👧</span>
           <div>
-            <h4 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark);">家長代表：做能一起判斷，而不只是沒收手機的大人</h4>
-            <p style="font-size: 0.85rem; color: #64748B;">「把質疑換成好奇，陪伴孩子培養數位免疫力」</p>
+            <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">家長代表：做能一起判斷，而不只是沒收手機的大人</h4>
+            <p style="font-size: 1rem; color: #64748B; font-weight: 700;">「把質疑換成好奇，陪伴孩子培養數位免疫力」</p>
           </div>
         </div>
-        <div class="grid-3col" style="margin-top: 14px;">
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--amber-accent);">💬 換一句有力量的問法</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">不問「這是不是抄 AI？」，改問「這段很精彩，你是怎麼判斷它可信的？」</p>
+        <div class="grid-3col" style="margin-top: 16px;">
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--amber-accent); font-size: 1.1rem;">💬 換一句有力量的問法</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">不問「這是不是抄 AI？」，改問「這段很精彩，你是怎麼判斷它可信的？」</p>
           </div>
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--stamp-green);">🔎 遇到可疑訊息共查共學</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">邀請孩子一起當小偵探，打開查核中心示範查證步驟，建立親子信任。</p>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--stamp-green); font-size: 1.1rem;">🔎 遇到可疑訊息共查共學</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">邀請孩子一起當小偵探，打開查核中心示範查證步驟，建立親子信任。</p>
           </div>
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--navy-dark);">📜 訂立明確家庭數位約定</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">不轉未查證急訊、不公開他人照片、保護家庭個資，大人以身作則。</p>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--navy-dark); font-size: 1.1rem;">📜 訂立明確家庭數位約定</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">不轉未查證急訊、不公開他人照片、保護家庭個資，大人以身作則。</p>
           </div>
         </div>
       `,
       teacher: `
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <span style="font-size: 2.2rem;">👩‍🏫</span>
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+          <span style="font-size: 2.5rem;">👩‍🏫</span>
           <div>
-            <h4 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark);">老師代表：示範判斷的過程，不只檢查最後答案</h4>
-            <p style="font-size: 0.85rem; color: #64748B;">「教育的目標不是抓出誰用了 AI，而是讓學生能說明自己的思考」</p>
+            <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">老師代表：示範判斷的過程，不只檢查最後答案</h4>
+            <p style="font-size: 1rem; color: #64748B; font-weight: 700;">「教育的目標不是抓出誰用了 AI，而是讓學生能說明自己的思考」</p>
           </div>
         </div>
-        <div class="grid-3col" style="margin-top: 14px;">
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--navy-dark);">📝 說清楚作業使用指引</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">明確告知哪些作業允許使用 AI 腦力激盪，以及如何正確進行引用與標示。</p>
+        <div class="grid-3col" style="margin-top: 16px;">
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--navy-dark); font-size: 1.1rem;">📝 說清楚作業使用指引</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">明確告知哪些作業允許使用 AI 腦力激盪，以及如何正確進行引用與標示。</p>
           </div>
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--amber-accent);">🔍 重視草稿與思考歷程</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">加入課堂口頭說明、同儕互評與修訂紀錄，看見學生真正的思維成長。</p>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--amber-accent); font-size: 1.1rem;">🔍 重視草稿與思考歷程</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">加入課堂口頭說明、同儕互評與修訂紀錄，看見學生真正的思維成長。</p>
           </div>
-          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--stamp-green);">🥊 拿 AI 產出練習抓錯</strong>
-            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">直接將 AI 生成的偏誤文章作為教材，讓全班一起練習挑出邏輯漏洞與假數據。</p>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 10px; padding: 16px;">
+            <strong style="color: var(--stamp-green); font-size: 1.1rem;">🥊 拿 AI 產出練習抓錯</strong>
+            <p style="font-size: 1rem; color: #475569; margin-top: 6px;">直接將 AI 生成的偏誤文章作為教材，讓全班一起練習挑出邏輯漏洞與假數據。</p>
           </div>
         </div>
       `
@@ -2953,15 +2940,15 @@
       const card = document.createElement('div');
       card.className = 'evidence-card';
       card.style.background = tag.includes('AI') ? '#F0FDF4' : tag.includes('提問') ? '#FEF2F2' : '#FFFDF0';
-      card.style.borderLeft = `6px solid ${tag.includes('AI') ? 'var(--stamp-green)' : tag.includes('提問') ? 'var(--detective-red)' : 'var(--amber-accent)'}`;
+      card.style.borderLeft = `8px solid ${tag.includes('AI') ? 'var(--stamp-green)' : tag.includes('提問') ? 'var(--detective-red)' : 'var(--amber-accent)'}`;
       card.style.animation = 'fadeInSlide 0.3s ease';
 
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #64748B; margin-bottom: 4px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 800; color: #64748B; margin-bottom: 6px;">
           <span>${escapeHtml(name)}</span>
           <span class="ref-link-badge">${escapeHtml(tag)}</span>
         </div>
-        <p style="font-size: 0.95rem; color: var(--navy-dark); font-weight: 700;">
+        <p style="font-size: 1.15rem; color: var(--navy-dark); font-weight: 800; line-height: 1.5;">
           ${escapeHtml(msg)}
         </p>
       `;
@@ -3034,7 +3021,7 @@
       render();
     }
 
-    // Auto-connect on startup with retry
+    // Auto-connect on startup
     function startFirebaseConnection(retries = 10) {
       if (typeof firebase !== 'undefined') {
         initFirebase();
