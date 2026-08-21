@@ -3113,14 +3113,32 @@
       if (!confirm('⚠️ 確定要清空現場投票、留言並將全場重置回第 00 單元嗎？（此動作無法復原）')) return;
       localStorage.removeItem('MY_VOTE_case1');
       myVotes.case1 = null;
+      for (let i = 0; i < 4; i++) {
+        localStorage.removeItem(`MY_QUIZ_${i}`);
+      }
+      myQuizAnswers = {};
+      quizScore = 0;
+      quizState = 'ready';
+      currentQuizIndex = 0;
       if (firebaseDb) {
         firebaseDb.ref('session').set({ chapter: 0, case1Revealed: false });
+        firebaseDb.ref('session/quiz').set({ qIndex: 0, state: 'ready' });
         firebaseDb.ref('votes/case1').set({ A: 0, B: 0, C: 0, D: 0 });
-        firebaseDb.ref('user_votes/case1').remove();
+        for (let i = 0; i < 4; i++) {
+          firebaseDb.ref(`votes/quiz/${i}`).set({ A: 0, B: 0, C: 0, D: 0 });
+        }
+        firebaseDb.ref('user_votes').remove();
+        firebaseDb.ref('user_scores').remove();
         firebaseDb.ref('feedbacks').remove();
         alert('✅ 雲端現場數據已成功清空，全場聽眾已同步重回第 00 單元！');
       } else {
         pollVotes = { A: 0, B: 0, C: 0, D: 0 };
+        quizVotes = {
+          0: { A: 0, B: 0, C: 0, D: 0 },
+          1: { A: 0, B: 0, C: 0, D: 0 },
+          2: { A: 0, B: 0, C: 0, D: 0 },
+          3: { A: 0, B: 0, C: 0, D: 0 }
+        };
         document.getElementById('sticky-notes-wall').innerHTML = '';
         updatePollUI(null);
         alert('✅ 本機數據已重置！');
@@ -3269,6 +3287,13 @@
       document.getElementById('btn-next-chap').disabled = (index === totalChapters - 1);
 
       if (index === 4) {
+        if (currentRole === 'presenter' && quizState !== 'running' && quizState !== 'revealed') {
+          quizState = 'ready';
+          currentQuizIndex = 0;
+          if (firebaseDb) {
+            firebaseDb.ref('session/quiz').set({ qIndex: 0, state: 'ready' });
+          }
+        }
         renderQuizQuestion();
       } else {
         clearInterval(quizTimer);
@@ -4102,6 +4127,9 @@
       quizScore = 0;
       quizState = 'ready';
       myQuizAnswers = {};
+      for (let i = 0; i < 4; i++) {
+        localStorage.removeItem(`MY_QUIZ_${i}`);
+      }
       const scoreBadge = document.getElementById('quiz-score-badge');
       if (scoreBadge && currentRole === 'audience') scoreBadge.innerText = '0 分';
       document.getElementById('quiz-area').style.display = 'block';
@@ -4113,6 +4141,11 @@
           qIndex: 0,
           state: 'ready'
         });
+        for (let i = 0; i < 4; i++) {
+          firebaseDb.ref(`votes/quiz/${i}`).set({ A: 0, B: 0, C: 0, D: 0 });
+        }
+        firebaseDb.ref('user_votes/quiz').remove();
+        firebaseDb.ref('user_scores').remove();
       }
     }
 
