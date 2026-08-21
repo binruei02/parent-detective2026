@@ -1,0 +1,2998 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>資訊識讀偵探事務所｜班親會互動共學網頁 (Firebase 高併發版)</title>
+  <meta name="description" content="在 AI 時代，練一雙會思考的眼睛！專為班親會宣講打造的卡通偵探風格互動網頁，支援 Firebase 萬人即時同步投票、提問便利貼牆與家庭數位約定證書。">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chango&family=Noto+Sans+TC:wght@400;600;700;900&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK (Compat Version for Zero-Build CDN Execution) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN SYSTEM & CSS VARIABLES (CARTOON DETECTIVE THEME)
+       ========================================================================== */
+    :root {
+      --bg-desk: #F7F3E9;
+      --bg-card: #FFFFFF;
+      --bg-folder: #FDF9F0;
+      --bg-folder-tab: #E9DEC8;
+      --navy-dark: #1A2938;
+      --navy-light: #2C3E50;
+      --amber-accent: #E67E22;
+      --amber-light: #FAD7A0;
+      --amber-glow: #F39C12;
+      --detective-red: #D9381E;
+      --detective-red-bg: #FADBD8;
+      --stamp-green: #27AE60;
+      --stamp-green-bg: #D4EFDF;
+      --border-dark: #2B3A42;
+      --text-main: #2C3E50;
+      --text-muted: #64748B;
+      --cork-board: #EADBC8;
+      --shadow-cartoon: 4px 4px 0px var(--border-dark);
+      --shadow-cartoon-lg: 7px 7px 0px var(--border-dark);
+      --shadow-cartoon-sm: 2px 2px 0px var(--border-dark);
+      --border-thick: 3px solid var(--border-dark);
+      --border-thin: 2px solid var(--border-dark);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-desk);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(230, 126, 34, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(26, 41, 56, 0.04) 0%, transparent 40%),
+        linear-gradient(#E8DFCE 1px, transparent 1px),
+        linear-gradient(90deg, #E8DFCE 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Laser pointer / spotlight layer */
+    #spotlight-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+    }
+    .laser-active #spotlight-layer {
+      display: block;
+    }
+
+    /* ==========================================================================
+       2. TOP PRESENTER & UTILITY TOOLBAR
+       ========================================================================== */
+    .toolbar-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(253, 249, 240, 0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: var(--border-thick);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .toolbar-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      background: var(--amber-accent);
+      border: var(--border-thick);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: var(--shadow-cartoon-sm);
+      transform: rotate(-3deg);
+      transition: transform 0.2s;
+    }
+    .brand-group:hover .brand-badge {
+      transform: rotate(0deg) scale(1.05);
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--navy-dark);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .tool-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      background: var(--bg-card);
+      border: var(--border-thin);
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy-dark);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-cartoon-sm);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .tool-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-cartoon);
+      background: #FFFDF9;
+    }
+    .tool-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px var(--border-dark);
+    }
+    .tool-btn.active {
+      background: var(--amber-accent);
+      color: white;
+      border-color: var(--navy-dark);
+    }
+
+    /* Live Cloud Sync Status Pill */
+    .sync-status-pill {
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(0,0,0,0.15);
+      cursor: pointer;
+    }
+    .sync-online {
+      background: #D4EFDF;
+      color: #196F3D;
+      border-color: #27AE60;
+    }
+    .sync-local {
+      background: #FCF3CF;
+      color: #B7950B;
+      border-color: #F1C40F;
+    }
+
+    /* Timer Widget */
+    .timer-badge {
+      background: var(--navy-dark);
+      color: #FFD166;
+      font-family: 'Outfit', monospace;
+      font-size: 0.95rem;
+      font-weight: 900;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      border: var(--border-thin);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 1px;
+    }
+    .timer-badge.warning {
+      background: var(--detective-red);
+      color: white;
+      animation: pulseAlert 1s infinite alternate;
+    }
+    @keyframes pulseAlert {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    /* ==========================================================================
+       3. NAVIGATION TABS (CASE CHAPTERS)
+       ========================================================================== */
+    .chapter-nav {
+      background: #EFE7D8;
+      border-bottom: var(--border-thick);
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .chapter-nav::-webkit-scrollbar {
+      height: 6px;
+    }
+    .chapter-nav::-webkit-scrollbar-thumb {
+      background: #C4B59D;
+      border-radius: 3px;
+    }
+    .chapter-nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      padding: 6px 16px 0;
+      gap: 6px;
+    }
+
+    .chapter-tab {
+      background: #DFD5C2;
+      color: #556575;
+      border: var(--border-thin);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .chapter-tab:hover {
+      background: #F4ECE0;
+      color: var(--navy-dark);
+    }
+    .chapter-tab.active {
+      background: var(--bg-desk);
+      color: var(--navy-dark);
+      border-color: var(--border-dark);
+      padding-top: 10px;
+      margin-top: -2px;
+      font-weight: 900;
+      box-shadow: 0 -3px 0 var(--amber-accent);
+    }
+    .chapter-tab .badge-num {
+      background: var(--navy-dark);
+      color: white;
+      font-size: 0.7rem;
+      border-radius: 6px;
+      padding: 1px 6px;
+    }
+    .chapter-tab.active .badge-num {
+      background: var(--amber-accent);
+    }
+
+    /* ==========================================================================
+       4. MAIN CONTAINER & PRESENTATION SLIDES / CHAPTERS
+       ========================================================================== */
+    .main-stage {
+      max-width: 1200px;
+      margin: 28px auto 60px;
+      padding: 0 20px;
+    }
+
+    .case-chapter-section {
+      display: none;
+      animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .case-chapter-section.active {
+      display: block;
+    }
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Detective Folder Container Style */
+    .case-folder {
+      background: var(--bg-folder);
+      border: var(--border-thick);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-cartoon-lg);
+      padding: 32px;
+      position: relative;
+      margin-bottom: 36px;
+    }
+
+    .folder-tag-tape {
+      position: absolute;
+      top: -14px;
+      left: 36px;
+      background: #FFEAA7;
+      border: var(--border-thin);
+      padding: 4px 16px;
+      font-size: 0.8rem;
+      font-weight: 900;
+      color: var(--border-dark);
+      box-shadow: var(--shadow-cartoon-sm);
+      transform: rotate(-1deg);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stamp-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      border: 3px dashed;
+      border-radius: 8px;
+      letter-spacing: 1px;
+      font-size: 0.85rem;
+      transform: rotate(-3deg);
+    }
+    .stamp-fake {
+      color: var(--detective-red);
+      border-color: var(--detective-red);
+      background: rgba(217, 56, 30, 0.08);
+    }
+    .stamp-official {
+      color: var(--stamp-green);
+      border-color: var(--stamp-green);
+      background: rgba(39, 174, 96, 0.08);
+    }
+    .stamp-warning {
+      color: var(--amber-accent);
+      border-color: var(--amber-accent);
+      background: rgba(230, 126, 34, 0.08);
+    }
+
+    .chapter-hero-title {
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: var(--navy-dark);
+      line-height: 1.3;
+      margin: 12px 0 8px;
+    }
+    .chapter-subtitle {
+      font-size: 1.1rem;
+      color: #475569;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    .crime-tape {
+      background: repeating-linear-gradient(
+        -45deg,
+        #F1C40F,
+        #F1C40F 16px,
+        #1A252F 16px,
+        #1A252F 32px
+      );
+      height: 12px;
+      border: var(--border-thin);
+      border-radius: 4px;
+      margin: 20px 0;
+      box-shadow: var(--shadow-cartoon-sm);
+    }
+
+    /* Grid Layouts */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 860px) {
+      .grid-2col, .grid-3col {
+        grid-template-columns: 1fr;
+      }
+      .chapter-hero-title {
+        font-size: 1.6rem;
+      }
+      .case-folder {
+        padding: 20px;
+      }
+    }
+
+    .evidence-card {
+      background: var(--bg-card);
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-cartoon);
+      padding: 20px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .evidence-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-cartoon-lg);
+    }
+
+    .evidence-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px dashed #CBD5E1;
+    }
+    .evidence-number {
+      font-size: 0.8rem;
+      font-weight: 900;
+      background: var(--navy-dark);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    /* Image Inspection with Interactive Clue Pins */
+    .inspection-viewer {
+      position: relative;
+      background: #E2E8F0;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-cartoon);
+    }
+    .inspection-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: filter 0.3s;
+    }
+
+    .clue-pin {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background: var(--detective-red);
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      animation: pulsePin 1.5s infinite;
+      z-index: 10;
+      transform: translate(-50%, -50%);
+    }
+    @keyframes pulsePin {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.2); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    .clue-pin:hover {
+      background: #C0392B;
+      transform: translate(-50%, -50%) scale(1.3) !important;
+    }
+
+    .clue-callout {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      background: rgba(26, 41, 56, 0.92);
+      color: white;
+      border: 2px solid #FFD166;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      animation: slideUp 0.2s ease;
+      z-index: 20;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Live Interactive Poll Component */
+    .poll-box {
+      background: #FFFDF9;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-cartoon);
+      margin: 16px 0;
+    }
+    .poll-question {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--navy-dark);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .poll-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .poll-btn {
+      background: white;
+      border: var(--border-thin);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .poll-btn:hover {
+      border-color: var(--amber-accent);
+      background: #FFF9F0;
+      transform: translateX(4px);
+    }
+    .poll-btn.selected {
+      background: #FDF2E9;
+      border-color: var(--amber-accent);
+      border-width: 2px;
+      box-shadow: var(--shadow-cartoon-sm);
+    }
+    .poll-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: rgba(230, 126, 34, 0.18);
+      border-right: 2px solid var(--amber-accent);
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1;
+    }
+    .poll-content-text {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .poll-badge-letter {
+      background: var(--navy-dark);
+      color: white;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 900;
+    }
+    .poll-percent {
+      position: relative;
+      z-index: 2;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      color: var(--amber-accent);
+      font-size: 1rem;
+    }
+
+    /* Flip Cards for Psychological Breakdown */
+    .flip-card {
+      background-color: transparent;
+      perspective: 1000px;
+      min-height: 200px;
+      cursor: pointer;
+    }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-cartoon);
+    }
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .flip-card-front {
+      background-color: #FFFFFF;
+      color: var(--navy-dark);
+    }
+    .flip-card-back {
+      background-color: var(--navy-dark);
+      color: #FFFFFF;
+      transform: rotateY(180deg);
+    }
+    .flip-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .flip-hint {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--amber-accent);
+      background: #FEF9E7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--amber-accent);
+    }
+
+    /* Step-by-Step 4-Step Interactive Tool (停、查、找、追) */
+    .steps-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+    }
+    @media (max-width: 900px) {
+      .steps-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 540px) {
+      .steps-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .step-box {
+      background: white;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: var(--shadow-cartoon);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .step-box:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-cartoon-lg);
+    }
+    .step-box.active {
+      background: #FFF9F0;
+      border-color: var(--amber-accent);
+      box-shadow: 0 0 0 3px var(--amber-accent), var(--shadow-cartoon);
+    }
+    .step-num-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy-dark);
+      color: #FFEAA7;
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      border: var(--border-thin);
+    }
+    .step-icon {
+      font-size: 2.2rem;
+      margin: 8px 0;
+    }
+    .step-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--navy-dark);
+    }
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .step-detail-viewer {
+      background: #FFFDF9;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-top: 16px;
+      box-shadow: var(--shadow-cartoon);
+      border-left: 8px solid var(--amber-accent);
+    }
+
+    /* 30-Second Challenge Module */
+    .quiz-card {
+      background: white;
+      border: var(--border-thick);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-cartoon-lg);
+      margin: 20px 0;
+    }
+    .quiz-timer-bar-wrap {
+      width: 100%;
+      height: 12px;
+      background: #E2E8F0;
+      border: var(--border-thin);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #2ECC71, #F1C40F, #E74C3C);
+      transition: width 0.1s linear;
+    }
+
+    .quiz-choice-btn {
+      width: 100%;
+      background: white;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy-dark);
+      cursor: pointer;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-cartoon-sm);
+      transition: all 0.15s;
+    }
+    .quiz-choice-btn:hover {
+      background: #FFF9F0;
+      transform: translateX(4px);
+    }
+    .quiz-choice-btn.correct {
+      background: var(--stamp-green-bg) !important;
+      border-color: var(--stamp-green) !important;
+      color: #1E8449 !important;
+    }
+    .quiz-choice-btn.wrong {
+      background: var(--detective-red-bg) !important;
+      border-color: var(--detective-red) !important;
+      color: #922B21 !important;
+    }
+
+    .explanation-box {
+      background: #F4F6F7;
+      border: var(--border-thin);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 16px;
+      display: none;
+      animation: fadeInSlide 0.3s ease;
+    }
+
+    /* Role Perspective Matrix (Student / Parent / Teacher) */
+    .role-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .role-tab-btn {
+      background: #EAE6DF;
+      border: var(--border-thick);
+      border-radius: var(--radius-pill);
+      padding: 8px 20px;
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: var(--navy-dark);
+      cursor: pointer;
+      box-shadow: var(--shadow-cartoon-sm);
+      transition: all 0.15s;
+    }
+    .role-tab-btn.active {
+      background: var(--navy-dark);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-cartoon);
+    }
+    .role-dossier-card {
+      background: white;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-cartoon);
+    }
+
+    /* Certificate Generator */
+    .cert-preview-card {
+      background: #FFFDF8;
+      border: 6px solid #B8860B;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      position: relative;
+      background-image: radial-gradient(circle, #FCF3CF 10%, transparent 11%);
+      background-size: 16px 16px;
+      text-align: center;
+    }
+    .cert-seal {
+      position: absolute;
+      bottom: 24px;
+      right: 32px;
+      width: 90px;
+      height: 90px;
+      border: 3px dashed #C0392B;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #C0392B;
+      font-weight: 900;
+      transform: rotate(-15deg);
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Reference Hub Cards */
+    .ref-link-card {
+      background: white;
+      border: var(--border-thick);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      box-shadow: var(--shadow-cartoon);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .ref-link-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-cartoon-lg);
+      border-color: var(--amber-accent);
+    }
+    .ref-link-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 900;
+      background: #E8F8F5;
+      color: #117A65;
+      border: 1px solid #A3E4D7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      width: fit-content;
+    }
+    .ref-go-btn {
+      background: var(--navy-dark);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      align-self: flex-end;
+    }
+
+    /* Presenter Bottom Bar */
+    .presenter-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 41, 56, 0.95);
+      border-top: var(--border-thick);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+    .nav-ctrl-btn {
+      background: var(--amber-accent);
+      color: white;
+      border: 2px solid white;
+      border-radius: var(--radius-pill);
+      padding: 8px 18px;
+      font-weight: 900;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .nav-ctrl-btn:hover {
+      background: #D35400;
+      transform: translateY(-1px);
+    }
+    .nav-ctrl-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      background: white;
+      border: var(--border-thick);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 580px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #E2E8F0;
+      border: var(--border-thin);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    .custom-input {
+      width: 100%;
+      border: var(--border-thick);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
+      margin-bottom: 12px;
+      background: #FFFDF9;
+    }
+    .custom-input:focus {
+      border-color: var(--amber-accent);
+      background: white;
+    }
+
+    @media print {
+      .toolbar-wrapper, .chapter-nav, .presenter-bottom-bar, .tool-actions, .nav-ctrl-btn {
+        display: none !important;
+      }
+      body {
+        background: white;
+      }
+      .cert-preview-card {
+        box-shadow: none;
+        border: 4px solid #333;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Virtual Laser Spotlight Layer -->
+  <canvas id="spotlight-layer"></canvas>
+
+  <!-- ========================================================================
+       TOP UTILITY TOOLBAR
+       ======================================================================== -->
+  <header class="toolbar-wrapper">
+    <div class="toolbar-container">
+      <div class="brand-group" onclick="switchChapter(0)">
+        <div class="brand-badge">🕵️</div>
+        <div class="brand-text">
+          <h1>資訊識讀偵探事務所</h1>
+          <p>2026 班親會共學｜在 AI 時代，練一雙會思考的眼睛</p>
+        </div>
+      </div>
+
+      <div class="tool-actions">
+        <!-- Firebase / Local Sync Status -->
+        <div class="sync-status-pill sync-local" id="sync-status-indicator" onclick="openFirebaseConfigModal()" title="點擊設定 Firebase 雲端即時同步">
+          <span id="sync-icon">🟡</span> <span id="sync-text">本機離線模式</span>
+        </div>
+
+        <!-- Presentation Timer -->
+        <div class="timer-badge" id="timer-display" title="宣講倒數計時器">
+          ⏱️ <span id="timer-digits">30:00</span>
+        </div>
+        <button class="tool-btn" onclick="toggleTimer()" id="timer-toggle-btn" title="開始/暫停計時">
+          ▶️ 計時
+        </button>
+        <button class="tool-btn" onclick="resetTimer(30)" title="重設為 30 分鐘">
+          🔄 重設
+        </button>
+
+        <!-- Laser Pointer / Spotlight -->
+        <button class="tool-btn" onclick="toggleLaserPointer()" id="laser-btn" title="開啟演講雷射聚光筆">
+          🔦 聚光燈
+        </button>
+
+        <!-- Sound FX -->
+        <button class="tool-btn" onclick="toggleSound()" id="sound-btn" title="音效切換">
+          🔊 音效
+        </button>
+
+        <!-- QR Code for Mobile Audience Sync -->
+        <button class="tool-btn" onclick="openQRModal()" title="展示手機掃碼加入互動">
+          📱 家長掃碼
+        </button>
+
+        <!-- Fullscreen -->
+        <button class="tool-btn" onclick="toggleFullscreen()" title="全螢幕投影片模式">
+          ⛶ 全螢幕
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       CHAPTER NAVIGATION TABS
+       ======================================================================== -->
+  <nav class="chapter-nav">
+    <div class="chapter-nav-inner">
+      <button class="chapter-tab active" onclick="switchChapter(0)">
+        <span class="badge-num">00</span> 事務所簡報室
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(1)">
+        <span class="badge-num">01</span> 山陀兒破冰懸案
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(2)">
+        <span class="badge-num">02</span> 假訊息六大偽裝
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(3)">
+        <span class="badge-num">03</span> 偵探口訣「停查找追」
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(4)">
+        <span class="badge-num">04</span> 30秒限時大挑戰
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(5)">
+        <span class="badge-num">05</span> AI 邊界與陪練員
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(6)">
+        <span class="badge-num">06</span> 家庭約定證書
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(7)">
+        <span class="badge-num">07</span> 查核資源急救包
+      </button>
+      <button class="chapter-tab" onclick="switchChapter(8)">
+        <span class="badge-num">08</span> 現場提問回饋牆
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================================================
+       MAIN STAGE: CASE CHAPTER CONTENT
+       ======================================================================== -->
+  <main class="main-stage">
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 0: 事務所首頁與任務簡報
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section active" id="chapter-0">
+      <div class="case-folder">
+        <div class="folder-tag-tape">📂 MISSION BRIEFING ｜ 任務簡報</div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <span class="stamp-badge stamp-official">2026 學年度 班親會特別任務</span>
+            <h1 class="chapter-hero-title">在 AI 時代，練一雙會思考的眼睛</h1>
+            <p class="chapter-subtitle">給學生、家長與老師的資訊識讀共學課 ｜ 先停一下 ➔ 查清楚 ➔ 再分享</p>
+          </div>
+          <div style="text-align: right; background: white; padding: 12px 18px; border: var(--border-thin); border-radius: var(--radius-md); box-shadow: var(--shadow-cartoon-sm);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">今日破案偵探分隊</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark);" id="voter-count-display">🕵️ 連線偵探：離線模式</div>
+          </div>
+        </div>
+
+        <div class="crime-tape"></div>
+
+        <div class="grid-3col" style="margin-top: 24px;">
+          <div class="evidence-card" style="border-top: 6px solid var(--detective-red);">
+            <div class="evidence-card-header">
+              <span class="evidence-number">FOCUS 01</span>
+              <span style="font-size: 1.5rem;">📱</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 8px;">資訊很多，判斷更重要</h3>
+            <p style="font-size: 0.9rem; color: #475569;">每天在 LINE 群、社群平台被各種截圖、急訊洗版。面對看似官方的圖卡，我們該如何第一時間冷靜辨識？</p>
+          </div>
+
+          <div class="evidence-card" style="border-top: 6px solid var(--amber-accent);">
+            <div class="evidence-card-header">
+              <span class="evidence-number">FOCUS 02</span>
+              <span style="font-size: 1.5rem;">🤖</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 8px;">AI 是陪練員，不是槍手</h3>
+            <p style="font-size: 0.9rem; color: #475569;">孩子寫作業用 AI 怎麼辦？引導孩子從「只拿答案」轉變成「提示思路與提問」，把核心思考留給自己。</p>
+          </div>
+
+          <div class="evidence-card" style="border-top: 6px solid var(--stamp-green);">
+            <div class="evidence-card-header">
+              <span class="evidence-number">FOCUS 03</span>
+              <span style="font-size: 1.5rem;">🤝</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 8px;">親師生同一條底線</h3>
+            <p style="font-size: 0.9rem; color: #475569;">不只沒收手機，而是建立家庭數位約定；一起查證、保護個資隱私，培養一輩子受用的資訊免疫力！</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-md); padding: 20px; text-align: center; box-shadow: var(--shadow-cartoon);">
+          <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">🕵️‍♂️ 各位家長偵探，準備好展開今日的「案件調查」了嗎？</h3>
+          <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 16px;">請透過鍵盤方向鍵 <code>→</code> 或點擊下方按鈕，進入第一宗破冰懸案！</p>
+          <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(1)">
+            進入案件 01：山陀兒破冰懸案 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 1: 案件一：嘉義市山陀兒颱風破冰懸案
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-1">
+      <div class="case-folder">
+        <div class="folder-tag-tape">🚨 CASE FILE #01 ｜ 破冰懸案</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span class="stamp-badge stamp-fake">真實破案回顧：2024 山陀兒颱風</span>
+            <h2 class="chapter-hero-title">今晚 9:30，班群跳出這張圖...</h2>
+            <p class="chapter-subtitle">「看起來很像官方，不代表來自官方」</p>
+          </div>
+        </div>
+
+        <div class="grid-2col" style="margin-top: 16px;">
+          
+          <!-- Left: Interactive Image Inspection -->
+          <div>
+            <div class="inspection-viewer" id="evidence-viewer">
+              <img id="fake-case-img" class="inspection-img" src="山陀兒假訊息.png" alt="嘉義市山陀兒假訊息截圖" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
+              
+              <!-- Clue Pins -->
+              <div class="clue-pin" style="top: 38%; left: 50%;" onclick="showClue(1)" title="點擊檢視破綻 1">1</div>
+              <div class="clue-pin" style="top: 15%; left: 80%;" onclick="showClue(2)" title="點擊檢視破綻 2">2</div>
+              <div class="clue-pin" style="top: 80%; left: 30%;" onclick="showClue(3)" title="點擊檢視破綻 3">3</div>
+
+              <!-- Callout Box -->
+              <div class="clue-callout" id="clue-callout-box">
+                <strong id="clue-title">🔍 破綻發現！</strong>
+                <p id="clue-desc" style="margin-top: 4px;"></p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
+              <button class="tool-btn" onclick="showClue(1)">🔍 破綻 1：日期字體毛邊</button>
+              <button class="tool-btn" onclick="showClue(2)">🔍 破綻 2：背景水滴套版</button>
+              <button class="tool-btn" onclick="showClue(3)">🔍 破綻 3：缺少時間戳</button>
+            </div>
+          </div>
+
+          <!-- Right: Live Audience Poll & Decision -->
+          <div>
+            <div class="poll-box">
+              <div class="poll-question">
+                <span>❓ 現場互動：如果是今晚 9:30 收到這張圖，你會怎麼做？</span>
+              </div>
+              <div class="poll-options">
+                <button class="poll-btn" onclick="castVote('case1', 'A')" id="vote-opt-A">
+                  <div class="poll-bar" id="bar-A" style="width: 15%;"></div>
+                  <div class="poll-content-text">
+                    <span class="poll-badge-letter">A</span>
+                    <span>立刻轉傳給親友與班群</span>
+                  </div>
+                  <span class="poll-percent" id="pct-A">15%</span>
+                </button>
+
+                <button class="poll-btn" onclick="castVote('case1', 'B')" id="vote-opt-B">
+                  <div class="poll-bar" id="bar-B" style="width: 32%;"></div>
+                  <div class="poll-content-text">
+                    <span class="poll-badge-letter">B</span>
+                    <span>在班群問：「這是真的嗎？」</span>
+                  </div>
+                  <span class="poll-percent" id="pct-B">32%</span>
+                </button>
+
+                <button class="poll-btn" onclick="castVote('case1', 'C')" id="vote-opt-C">
+                  <div class="poll-bar" id="bar-C" style="width: 48%;"></div>
+                  <div class="poll-content-text">
+                    <span class="poll-badge-letter">C</span>
+                    <span>查官方人事行政總處／市府正式公告</span>
+                  </div>
+                  <span class="poll-percent" id="pct-C">48%</span>
+                </button>
+
+                <button class="poll-btn" onclick="castVote('case1', 'D')" id="vote-opt-D">
+                  <div class="poll-bar" id="bar-D" style="width: 5%;"></div>
+                  <div class="poll-content-text">
+                    <span class="poll-badge-letter">D</span>
+                    <span>不管它，明天早上再說</span>
+                  </div>
+                  <span class="poll-percent" id="pct-D">5%</span>
+                </button>
+              </div>
+
+              <div id="vote-feedback" style="margin-top: 14px; font-size: 0.88rem; color: var(--navy-dark); font-weight: 700; display: none;">
+                🎉 感謝您的即時表態！點選「C」是最標準的防護動作。
+              </div>
+            </div>
+
+            <!-- Side-by-side Evidence Reveal -->
+            <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-cartoon);">
+              <h4 style="font-weight: 900; color: var(--navy-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <span>🕵️ 真相還原：</span>
+                <span class="stamp-badge stamp-fake" style="font-size: 0.75rem; padding: 2px 8px;">後製竄改圖卡</span>
+              </h4>
+              <p style="font-size: 0.88rem; color: #475569;">
+                <strong>正式結果：</strong>嘉義市 10/1 <strong>正常上班、正常上課</strong>！市府火速發布澄清稿，並由警方追查不實訊息來源。
+              </p>
+              <div style="margin-top: 10px; display: flex; gap: 8px;">
+                <button class="tool-btn" onclick="toggleComparisonModal()" style="background: #FEF9E7; border-color: var(--amber-accent);">
+                  🖼️ 點此查看 7/26 原始真圖 vs 10/1 改圖對照
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="crime-tape"></div>
+
+        <!-- 3 Psychological Triggers (Flip Cards) -->
+        <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 14px;">
+          🧠 偵探心理破譯：為什麼大家會相信？（假訊息利用的不是無知，而是關心）
+        </h3>
+
+        <div class="grid-3col">
+          <div class="flip-card" onclick="flipCard(this)">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <div class="flip-card-icon">⚡</div>
+                <h3 style="font-size: 1.4rem; font-weight: 900; color: var(--detective-red);">「 急 」</h3>
+                <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">現在就得決定明天怎麼安排</p>
+                <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+              </div>
+              <div class="flip-card-back">
+                <h4 style="font-size: 1.1rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">時間急迫陷阱</h4>
+                <p style="font-size: 0.85rem; line-height: 1.5;">
+                  晚上 9:30 大家正忙著安排隔天工作與接送孩子；<strong>越著急，越容易把「很像官方」直接當成「來自官方」！</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flip-card" onclick="flipCard(this)">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <div class="flip-card-icon">😨</div>
+                <h3 style="font-size: 1.4rem; font-weight: 900; color: var(--amber-accent);">「 怕 」</h3>
+                <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">怕孩子不知道、怕自己漏接</p>
+                <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+              </div>
+              <div class="flip-card-back">
+                <h4 style="font-size: 1.1rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">FOMO 焦慮效應</h4>
+                <p style="font-size: 0.85rem; line-height: 1.5;">
+                  深怕漏接任何停課資訊影響孩子，這種出於關愛與責任的焦慮，被造假者精準利用為轉發動力。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flip-card" onclick="flipCard(this)">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <div class="flip-card-icon">🤝</div>
+                <h3 style="font-size: 1.4rem; font-weight: 900; color: var(--stamp-green);">「 熟 」</h3>
+                <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">訊息來自親友或班群很可信</p>
+                <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+              </div>
+              <div class="flip-card-back">
+                <h4 style="font-size: 1.1rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">信任轉移盲點</h4>
+                <p style="font-size: 0.85rem; line-height: 1.5;">
+                  我們信任班群裡的家長與朋友，但<strong>「對人的信任」不等於「訊息已被查證」</strong>。班群是傳播高速公路，不是查證起點！
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; background: #1A2938; color: #FFD166; padding: 16px 24px; border-radius: var(--radius-md); border: var(--border-thick); text-align: center; font-size: 1.1rem; font-weight: 900;">
+          💡 偵探金句：急著要你轉發的訊息，最值得你慢慢查！
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 2: 假訊息六大偽裝變形牆
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-2">
+      <div class="case-folder">
+        <div class="folder-tag-tape">🎭 CASE FILE #02 ｜ 假訊息六大偽裝</div>
+        <span class="stamp-badge stamp-warning">假訊息早已不只是「假新聞」</span>
+        <h2 class="chapter-hero-title">識破 6 種日常最常見的變形陷阱</h2>
+        <p class="chapter-subtitle">點擊卡片，翻開偵探的「關鍵追查密技」！</p>
+
+        <div class="grid-3col" style="margin-top: 20px;">
+          <!-- 01 假標題 -->
+          <div class="evidence-card" onclick="flipDisguise(this)" style="cursor: pointer;">
+            <div class="evidence-card-header">
+              <span class="evidence-number">01</span>
+              <span style="font-size: 1.4rem;">🏷️ 假標題</span>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">內容誇大、標題殺人</p>
+            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+              <strong>🔎 偵探追查：</strong>「是哪個研究說的？原文刊載在哪裡？」
+            </div>
+          </div>
+
+          <!-- 02 舊聞新傳 -->
+          <div class="evidence-card" onclick="flipDisguise(this)" style="cursor: pointer;">
+            <div class="evidence-card-header">
+              <span class="evidence-number">02</span>
+              <span style="font-size: 1.4rem;">⏳ 舊聞新傳</span>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">拿 3 年前的天災當今天</p>
+            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+              <strong>🔎 偵探追查：</strong>「事件發生的確切時間、年份與地點？」
+            </div>
+          </div>
+
+          <!-- 03 斷章取義 -->
+          <div class="evidence-card" onclick="flipDisguise(this)" style="cursor: pointer;">
+            <div class="evidence-card-header">
+              <span class="evidence-number">03</span>
+              <span style="font-size: 1.4rem;">✂️ 斷章取義</span>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">去頭去尾，只剪激動一句話</p>
+            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+              <strong>🔎 偵探追查：</strong>「整段發言的前後脈絡是什麼？有沒有完整錄音錄影？」
+            </div>
+          </div>
+
+          <!-- 04 假帳號冒名 -->
+          <div class="evidence-card" onclick="flipDisguise(this)" style="cursor: pointer;">
+            <div class="evidence-card-header">
+              <span class="evidence-number">04</span>
+              <span style="font-size: 1.4rem;">🎭 假帳號冒名</span>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">山寨粉專、名人群組</p>
+            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+              <strong>🔎 偵探追查：</strong>「帳號是否有官方認證？有沒有官方網站公布的連結對應？」
+            </div>
+          </div>
+
+          <!-- 05 修圖與 AI 圖像 -->
+          <div class="evidence-card" onclick="flipDisguise(this)" style="cursor: pointer;">
+            <div class="evidence-card-header">
+              <span class="evidence-number">05</span>
+              <span style="font-size: 1.4rem;">🎨 修圖與 AI 圖</span>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">換字、換臉、AI 生圖造謠</p>
+            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+              <strong>🔎 偵探追查：</strong>「能否找到原始未修圖照片？利用以圖搜圖比對！」
+            </div>
+          </div>
+
+          <!-- 06 AI 聲音／深偽 -->
+          <div class="evidence-card" onclick="flipDisguise(this)" style="cursor: pointer;">
+            <div class="evidence-card-header">
+              <span class="evidence-number">06</span>
+              <span style="font-size: 1.4rem;">🎙️ AI 深偽語音</span>
+            </div>
+            <p style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark);">模擬親友聲音緊急求救借錢</p>
+            <div class="disguise-solution" style="margin-top: 10px; background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.85rem;">
+              <strong>🔎 偵探追查：</strong>「掛斷電話，用彼此已知的安全管道或暗號反撥確認！」
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+          <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(3)">
+            掌握解法：學習「停、查、找、追」四字口訣 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 3: 偵探秘技：四字查證口訣「停、查、找、追」
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-3">
+      <div class="case-folder">
+        <div class="folder-tag-tape">🔍 DETECTIVE METHOD ｜ 查證秘技</div>
+        <span class="stamp-badge stamp-official">實用口訣：先停一下，再做判斷</span>
+        <h2 class="chapter-hero-title">查證不必像名偵探那麼累！</h2>
+        <p class="chapter-subtitle">牢記「停、查、找、追」四字工作流，為全家築起防護網</p>
+
+        <!-- 4 Step Interactive Selector -->
+        <div class="steps-container">
+          <div class="step-box active" onclick="activateStep(1)">
+            <span class="step-num-badge">STEP 1</span>
+            <div class="step-icon">🛑</div>
+            <div class="step-title">1. 停 (Stop)</div>
+            <div class="step-desc">先不按讚、留言、轉傳</div>
+          </div>
+
+          <div class="step-box" onclick="activateStep(2)">
+            <span class="step-num-badge">STEP 2</span>
+            <div class="step-icon">🔎</div>
+            <div class="step-title">2. 查 (Check)</div>
+            <div class="step-desc">查來源、日期、官方認證</div>
+          </div>
+
+          <div class="step-box" onclick="activateStep(3)">
+            <span class="step-num-badge">STEP 3</span>
+            <div class="step-icon">👥</div>
+            <div class="step-title">3. 找 (Find)</div>
+            <div class="step-desc">找兩個獨立可靠來源</div>
+          </div>
+
+          <div class="step-box" onclick="activateStep(4)">
+            <span class="step-num-badge">STEP 4</span>
+            <div class="step-icon">🏃</div>
+            <div class="step-title">4. 追 (Trace)</div>
+            <div class="step-desc">追原始影音與完整脈絡</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Step Detail Viewer -->
+        <div class="step-detail-viewer" id="step-detail-box">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+            <span style="font-size: 2rem;" id="step-detail-icon">🛑</span>
+            <div>
+              <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark);" id="step-detail-title">第 1 步：停 (Stop) —— 守住第一道防線</h3>
+              <p style="font-size: 0.9rem; color: #64748B;" id="step-detail-sub">「轉發只要一秒，闢謠卻要跑斷腿」</p>
+            </div>
+          </div>
+          <div id="step-detail-body" style="font-size: 0.95rem; line-height: 1.7; color: var(--text-main);">
+            <ul>
+              <li><strong>深呼吸 3 秒：</strong>特別是當訊息讓你感到「極度憤怒」、「極度驚恐」或「急著想告訴親朋好友」時。</li>
+              <li><strong>不點讚、不轉發：</strong>演算法會因為轉發擴散熱度，不轉傳就等於斬斷謠言傳播鏈。</li>
+              <li><strong>不轉存截圖：</strong>模糊的截圖往往去除了原始發文者與時間，最容易產生誤解。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+          <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(4)">
+            立即進入實戰：30 秒限時大挑戰 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 4: 現場 30 秒限時偵探大挑戰
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-4">
+      <div class="case-folder">
+        <div class="folder-tag-tape">⚡ SPEED TRIAL ｜ 限時大挑戰</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <div>
+            <span class="stamp-badge stamp-warning">現場 30 秒限時任務</span>
+            <h2 class="chapter-hero-title">測驗你的資訊識讀反應力！</h2>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 900; font-size: 1.1rem; color: var(--navy-dark);">🎯 挑戰得分：</span>
+            <span id="quiz-score-badge" style="background: var(--amber-accent); color: white; padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 900; font-size: 1.1rem;">0 分</span>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-card" id="quiz-area">
+          <div class="quiz-timer-bar-wrap">
+            <div class="quiz-timer-bar" id="quiz-progress-bar"></div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <span class="evidence-number" id="quiz-q-num">QUESTION 01 / 04</span>
+            <span style="font-weight: 900; color: var(--detective-red);" id="quiz-countdown-num">⏳ 倒數 30 秒</span>
+          </div>
+
+          <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;" id="quiz-question-text">
+            【轉傳截圖】「教育部剛宣布：下學期開始，所有學生都必須購買 AI 平板。」你第一個要查的是？
+          </h3>
+
+          <div id="quiz-options-container">
+            <button class="quiz-choice-btn" onclick="answerQuiz(0)">
+              <span class="poll-badge-letter">A</span> 來源是誰？誰第一個轉發的？
+            </button>
+            <button class="quiz-choice-btn" onclick="answerQuiz(1)">
+              <span class="poll-badge-letter">B</span> 發布日期是哪一年、哪一天？
+            </button>
+            <button class="quiz-choice-btn" onclick="answerQuiz(2)">
+              <span class="poll-badge-letter">C</span> 教育部官方網站的正式原文公告？
+            </button>
+            <button class="quiz-choice-btn" onclick="answerQuiz(3)">
+              <span class="poll-badge-letter">D</span> 網路上有沒有其他人在討論？
+            </button>
+          </div>
+
+          <div class="explanation-box" id="quiz-explanation-box">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span id="quiz-result-stamp" class="stamp-badge stamp-official" style="font-size: 0.8rem;">✅ 回答正確</span>
+              <strong id="quiz-exp-title">偵探解析：</strong>
+            </div>
+            <p id="quiz-exp-text" style="font-size: 0.9rem; color: #334155; line-height: 1.5;"></p>
+            <button class="tool-btn" style="margin-top: 12px; background: var(--navy-dark); color: white;" onclick="nextQuizQuestion()" id="quiz-next-btn">
+              下一題挑戰 ➔
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 5: AI 時代的時事、使用邊界與陪練員教案
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-5">
+      <div class="case-folder">
+        <div class="folder-tag-tape">🤖 AI LITERACY LAB ｜ AI 時代新思維</div>
+        <span class="stamp-badge stamp-official">從「回答問題」走向「協助完成任務」</span>
+        <h2 class="chapter-hero-title">AI 可以幫忙，但不能替你「學會」</h2>
+        <p class="chapter-subtitle">換一種問法，學習就不一樣：把 AI 變成陪練員，把思考留給自己！</p>
+
+        <!-- Comparison: Answer Getter vs Sparring Partner -->
+        <div class="grid-2col" style="margin: 20px 0;">
+          <div class="evidence-card" style="border-top: 6px solid var(--detective-red); background: #FFFDFD;">
+            <div class="evidence-card-header">
+              <span class="stamp-badge stamp-fake">❌ 只想拿答案的問法</span>
+              <span style="font-size: 1.5rem;">🤖➡️🥱</span>
+            </div>
+            <div style="background: #FADBD8; padding: 12px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 700; margin-bottom: 12px; color: #922B21;">
+              「幫我把這份歷史作業心得寫完 500 字。」
+            </div>
+            <h4 style="font-weight: 900; color: var(--navy-dark);">🚨 結果與代價：</h4>
+            <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">
+              雖然 5 秒快速交差，但自己完全不知道懂了什麼，甚至可能在全班討論時答不出所以然，<strong>思維能力逐漸退化</strong>。
+            </p>
+          </div>
+
+          <div class="evidence-card" style="border-top: 6px solid var(--stamp-green); background: #FDFEFE;">
+            <div class="evidence-card-header">
+              <span class="stamp-badge stamp-official">💡 陪練員問法（Socratic Coach）</span>
+              <span style="font-size: 1.5rem;">🤖🥊🧠</span>
+            </div>
+            <div style="background: #D4EFDF; padding: 12px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 700; margin-bottom: 12px; color: #196F3D;">
+              「請先針對這篇課文問我 3 個關鍵問題，並根據我的回答提示我下一步思考方向。」
+            </div>
+            <h4 style="font-weight: 900; color: var(--navy-dark);">🌟 結果與收穫：</h4>
+            <p style="font-size: 0.9rem; color: #64748B; margin-top: 6px;">
+              把 AI 當成個人專屬教練，<strong>讓 AI 幫你想（提示/搭鷹架），而不是替你想（代寫）</strong>，思考主導權永遠在自己手上！
+            </p>
+          </div>
+        </div>
+
+        <div class="crime-tape"></div>
+
+        <!-- 3 Role Boundaries Matrix (Interactive Tabs) -->
+        <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 12px;">
+          🎯 三種身分，同一條底線（點選切換視角）
+        </h3>
+
+        <div class="role-tabs">
+          <button class="role-tab-btn active" onclick="switchRole('student')">🎒 學生視角</button>
+          <button class="role-tab-btn" onclick="switchRole('parent')">👨‍👩‍👧 家長視角</button>
+          <button class="role-tab-btn" onclick="switchRole('teacher')">👩‍🏫 老師視角</button>
+        </div>
+
+        <div class="role-dossier-card" id="role-dossier-content">
+          <!-- Populated by JS -->
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+          <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(6)">
+            建立家庭約定：產生專屬數位承諾證書 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 6: 班親會全班親師生「數位時代家庭約定」證書生成器
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-6">
+      <div class="case-folder">
+        <div class="folder-tag-tape">📜 FAMILY PLEDGE ｜ 數位家庭約定</div>
+        <span class="stamp-badge stamp-official">班親會共識：把話說成全家共同的約定</span>
+        <h2 class="chapter-hero-title">「數位資訊小偵探」家庭榮譽承諾卡</h2>
+        <p class="chapter-subtitle">不只是禁止，而是全家一起簽署遵守的 4 大守則！</p>
+
+        <div class="grid-2col" style="margin-top: 20px;">
+          <!-- Left: Customizer Form -->
+          <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-cartoon);">
+            <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
+              ✍️ 簽署家庭偵探榮譽條款
+            </h3>
+
+            <label style="font-size: 0.85rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 4px;">
+              學生姓名：
+            </label>
+            <input type="text" id="cert-student-name" class="custom-input" placeholder="例如：林小明" value="林小明" oninput="updateCertPreview()">
+
+            <label style="font-size: 0.85rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 4px;">
+              家長 / 導師簽名：
+            </label>
+            <input type="text" id="cert-parent-name" class="custom-input" placeholder="例如：林爸爸、王媽媽、陳老師" value="王家長" oninput="updateCertPreview()">
+
+            <div style="margin: 16px 0;">
+              <strong style="font-size: 0.9rem; color: var(--navy-dark); display: block; margin-bottom: 8px;">
+                ✅ 勾選家庭承諾守則：
+              </strong>
+
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-1">
+                <span><strong>01. 情緒越急，越先停：</strong>遇到未查證急訊絕不盲目轉發。</span>
+              </label>
+
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-2">
+                <span><strong>02. 資訊越驚人，越找來源：</strong>凡事先查官方權威管道。</span>
+              </label>
+
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-3">
+                <span><strong>03. AI 越方便，越保留思考：</strong>絕不讓 AI 取代自己動腦。</span>
+              </label>
+
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" checked onchange="updateCertPreview()" id="pledge-4">
+                <span><strong>04. 遇到困難，一起討論：</strong>不隱瞞個資風險，全家共查共學。</span>
+              </label>
+            </div>
+
+            <button class="tool-btn" style="width: 100%; background: var(--amber-accent); color: white; justify-content: center; padding: 12px; font-size: 1rem;" onclick="generateCertSuccess()">
+              🎖️ 確認完成簽署並蓋章！
+            </button>
+          </div>
+
+          <!-- Right: Interactive Certificate Canvas / Card -->
+          <div>
+            <div class="cert-preview-card" id="certificate-print-zone">
+              <div style="font-size: 2.2rem; margin-bottom: 4px;">🏆</div>
+              <h2 style="font-size: 1.5rem; font-weight: 900; color: #B8860B; letter-spacing: 2px;">數位資訊小偵探・家庭約定書</h2>
+              <p style="font-size: 0.8rem; color: #888; margin-bottom: 14px;">2026 學年度 班親會資訊素養榮譽認證</p>
+              
+              <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-dark); line-height: 1.6; margin: 16px 0; text-align: left; background: rgba(255,255,255,0.7); padding: 12px 16px; border-radius: 8px; border: 1px dashed #D4AF37;">
+                茲證明小偵探 <strong style="color: var(--detective-red); font-size: 1.2rem;" id="preview-student">林小明</strong> 與 家長 <strong style="color: var(--navy-dark); font-size: 1.1rem;" id="preview-parent">王家長</strong>，共同承諾落實：
+                <ul id="preview-pledges-list" style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem; color: #475569;">
+                  <li>情緒越急，越先停下來。</li>
+                  <li>資訊越驚人，越找原始來源。</li>
+                  <li>AI 越方便，越保留獨立思考。</li>
+                  <li>遇到困難，願意親子一起討論。</li>
+                </ul>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; font-size: 0.85rem; color: #555; text-align: left;">
+                <div>
+                  <div>發證單位：資訊識讀特搜事務所</div>
+                  <div>簽署日期：<span id="cert-date-text">2026/08/21</span></div>
+                </div>
+              </div>
+
+              <div class="cert-seal">
+                <span>★ 榮譽特搜 ★</span>
+                <span style="font-size: 1.1rem;">已認證</span>
+                <span>VERIFIED</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+              <button class="tool-btn" onclick="window.print()" style="flex: 1; justify-content: center;">
+                🖨️ 列印 / 另存 PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+          <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(7)">
+            進入最後急救包：官方查核與通報資源直連 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 7: 官方查核與工具急救包 (RESOURCE HUB)
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-7">
+      <div class="case-folder">
+        <div class="folder-tag-tape">🚨 RESOURCE HUB ｜ 查核急救包</div>
+        <span class="stamp-badge stamp-official">官方認證入口：有疑問時，先到這裡找！</span>
+        <h2 class="chapter-hero-title">常用事實查核與官方示警平台</h2>
+        <p class="chapter-subtitle">直接點擊卡片即可前往官方網站，宣講時可隨時調閱驗證！</p>
+
+        <div class="grid-3col" style="margin-top: 20px;">
+          
+          <!-- 1. 人事行政總處 -->
+          <a href="https://www.dgpa.gov.tw/typh/daily/nds.html" target="_blank" rel="noopener noreferrer" class="ref-link-card">
+            <div>
+              <span class="ref-link-badge">🏛️ 停班停課唯一基準</span>
+              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">行政院人事行政總處</h3>
+              <p style="font-size: 0.85rem; color: #64748B;">天然災害停止上班及上課情形官方即時公告，最權威的第一手資訊來源。</p>
+            </div>
+            <div class="ref-go-btn">前往官網 ↗</div>
+          </a>
+
+          <!-- 2. 台灣事實查核中心 -->
+          <a href="https://tfc-taiwan.org.tw/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
+            <div>
+              <span class="ref-link-badge">🔍 IFCN 國際認證</span>
+              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">台灣事實查核中心 (TFC)</h3>
+              <p style="font-size: 0.85rem; color: #64748B;">專業深度查核報告、時事假訊息闢謠、AI 深度偽造圖影鑑定專區。</p>
+            </div>
+            <div class="ref-go-btn">前往官網 ↗</div>
+          </a>
+
+          <!-- 3. MyGoPen -->
+          <a href="https://www.mygopen.com/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
+            <div>
+              <span class="ref-link-badge">🛡️ LINE 闢謠助手</span>
+              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">MyGoPen 麥擱騙</h3>
+              <p style="font-size: 0.85rem; color: #64748B;">長輩群組熱門假訊息、網路詐騙手法即時破解，提供 LINE 官方查證機器人。</p>
+            </div>
+            <div class="ref-go-btn">前往官網 ↗</div>
+          </a>
+
+          <!-- 4. Cofacts 真的假的 -->
+          <a href="https://cofacts.tw/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
+            <div>
+              <span class="ref-link-badge">🌐 群眾協作闢謠</span>
+              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">Cofacts 真的假的</h3>
+              <p style="font-size: 0.85rem; color: #64748B;">開源群眾協作訊息查核資料庫，轉傳訊息直接自動比對多方回覆。</p>
+            </div>
+            <div class="ref-go-btn">前往官網 ↗</div>
+          </a>
+
+          <!-- 5. 國家災害防救科技中心 -->
+          <a href="https://alerts.ncdr.nat.gov.tw/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
+            <div>
+              <span class="ref-link-badge">⚠️ 國家級即時示警</span>
+              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">國家災害防救科技中心</h3>
+              <p style="font-size: 0.85rem; color: #64748B;">地震、颱風、豪雨、水庫洩洪等國家級防災示警統合發布平台。</p>
+            </div>
+            <div class="ref-go-btn">前往官網 ↗</div>
+          </a>
+
+          <!-- 6. 教育部數位學習與 AI 守則 -->
+          <a href="https://depart.moe.gov.tw/ed2700/" target="_blank" rel="noopener noreferrer" class="ref-link-card">
+            <div>
+              <span class="ref-link-badge">🤖 教育部官方指引</span>
+              <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">教育部資訊及科技教育司</h3>
+              <p style="font-size: 0.85rem; color: #64748B;">中小學生成式 AI 輔助教學指引、校園資訊素養與倫理學習資源。</p>
+            </div>
+            <div class="ref-go-btn">前往官網 ↗</div>
+          </a>
+
+        </div>
+
+        <div style="margin-top: 24px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-md); padding: 20px; text-align: center; box-shadow: var(--shadow-cartoon);">
+          <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark);">
+            🌟 「科技會一直變；把判斷力留在自己手上！」
+          </h3>
+          <p style="font-size: 0.95rem; color: #475569; margin-top: 6px;">
+            最珍貴的能力，不是永遠不被騙；而是發現自己可能被影響時，願意停下來、願意查、也願意重新判斷。謝謝大家！
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------------------
+         CHAPTER 8: 現場家長即時互動提問與回饋牆
+         -------------------------------------------------------------------- -->
+    <section class="case-chapter-section" id="chapter-8">
+      <div class="case-folder">
+        <div class="folder-tag-tape">💬 LIVE FEEDBACK ｜ 即時提問回饋牆</div>
+        <span class="stamp-badge stamp-official">親師交流室：現場互動與提問</span>
+        <h2 class="chapter-hero-title">現場家長提問與心得便利貼</h2>
+        <p class="chapter-subtitle">歡迎留下您對今天宣講的想法，或想與老師進一步討論的數位教養問題！</p>
+
+        <div class="grid-2col" style="margin-top: 20px;">
+          <!-- Submit Form -->
+          <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-cartoon);">
+            <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 14px;">
+              📝 發表提問或給孩子的一句話
+            </h3>
+
+            <input type="text" id="feedback-name" class="custom-input" placeholder="您的稱呼（例如：二年一班小華媽媽）">
+            
+            <select id="feedback-tag" class="custom-input" style="font-weight: 700;">
+              <option value="💡 心得共學">💡 心得共學</option>
+              <option value="❓ 數位教養提問">❓ 數位教養提問</option>
+              <option value="🤖 AI 使用困惑">🤖 AI 使用困惑</option>
+              <option value="🛡️ 家庭約定分享">🛡️ 家庭約定分享</option>
+            </select>
+
+            <textarea id="feedback-msg" class="custom-input" rows="4" placeholder="請輸入您想分享的心得或問題..."></textarea>
+
+            <button class="tool-btn" style="width: 100%; background: var(--navy-dark); color: white; justify-content: center; padding: 12px; font-size: 1rem;" onclick="postFeedback()">
+              🚀 送出便利貼留言
+            </button>
+          </div>
+
+          <!-- Live Sticky Wall -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <strong style="font-size: 1.1rem; color: var(--navy-dark);">📌 即時留言展示板</strong>
+              <span style="font-size: 0.8rem; color: #64748B;" id="feedback-count">即時連線推播中</span>
+            </div>
+            <div id="sticky-notes-wall" style="display: flex; flex-direction: column; gap: 12px; max-height: 460px; overflow-y: auto; padding-right: 4px;">
+              <!-- Sticky Notes dynamically inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       PRESENTER BOTTOM STICKY CONTROLLER
+       ======================================================================== -->
+  <footer class="presenter-bottom-bar">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="nav-ctrl-btn" onclick="prevChapter()" id="btn-prev-chap">
+        ◀ 上一單元
+      </button>
+      <span style="font-weight: 900; font-size: 0.9rem;" id="current-chapter-indicator">00 / 08</span>
+      <button class="nav-ctrl-btn" onclick="nextChapter()" id="btn-next-chap">
+        下一單元 ▶
+      </button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 0.85rem; color: #CBD5E1;" class="d-none-mobile">
+        💡 鍵盤 <code>←</code> <code>→</code> 切換 ｜ <code>Space</code> 答題
+      </span>
+      <button class="tool-btn" onclick="openFirebaseConfigModal()" style="background: rgba(255,255,255,0.15); color: white; border-color: rgba(255,255,255,0.3);">
+        ⚙️ 雲端設定
+      </button>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       MODAL 1: SIDE-BY-SIDE EVIDENCE COMPARISON MODAL
+       ======================================================================== -->
+  <div class="modal-overlay" id="comparison-modal">
+    <div class="modal-card" style="max-width: 780px;">
+      <button class="modal-close-btn" onclick="toggleComparisonModal()">✕</button>
+      <span class="stamp-badge stamp-official">物證 01 號：原始真圖 vs 後製變造圖</span>
+      <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin: 10px 0 16px;">
+        🔍 嘉義市政府圖卡 變造對照分析
+      </h3>
+      
+      <div class="grid-2col">
+        <div>
+          <div style="background: var(--stamp-green-bg); padding: 6px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 6px;">
+            <strong style="color: #196F3D;">✅ 2024/07/26 凱米颱風（原始官方）</strong>
+          </div>
+          <img src="477158714_1144428560370864_6678778382469093885_n.jpg" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="原始真圖" onerror="this.src=CASE_IMAGES.real_0726 || ''">
+        </div>
+
+        <div>
+          <div style="background: var(--detective-red-bg); padding: 6px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 6px;">
+            <strong style="color: #922B21;">❌ 2024/10/01 山陀兒（變造假圖）</strong>
+          </div>
+          <img src="山陀兒假訊息.png" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="變造假圖" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; background: #FFF9F0; border: var(--border-thin); border-radius: var(--radius-sm); padding: 12px; font-size: 0.9rem;">
+        <strong>破案摘要：</strong>造假者擷取 7 月 26 日的舊圖，使用修圖軟體塗改「7/26(五)」為「10/1(二)」。由於背景、人物與官方模板完全一致，民眾極難單憑肉眼區分，<strong>唯一可靠方法是回到官方人事行政總處確認！</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: MOBILE AUDIENCE QR CODE MODAL
+       ======================================================================== -->
+  <div class="modal-overlay" id="qr-modal">
+    <div class="modal-card" style="text-align: center;">
+      <button class="modal-close-btn" onclick="openQRModal()">✕</button>
+      <div style="font-size: 2.2rem; margin-bottom: 6px;">📱</div>
+      <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+        現場家長手機掃碼加入互動
+      </h3>
+      <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 16px;">
+        請家長拿出手機打開相機掃描下方 QR Code，同步參與即時投票與生成家庭約定證書！
+      </p>
+
+      <div style="background: #F8FAFC; border: var(--border-thick); border-radius: var(--radius-md); padding: 16px; display: inline-block; box-shadow: var(--shadow-cartoon-sm);">
+        <svg id="qr-svg" width="200" height="200" viewBox="0 0 100 100" style="display: block; margin: 0 auto;">
+          <rect width="100" height="100" fill="white"/>
+          <rect x="10" y="10" width="24" height="24" fill="#1A2938"/>
+          <rect x="14" y="14" width="16" height="16" fill="white"/>
+          <rect x="17" y="17" width="10" height="10" fill="#E67E22"/>
+
+          <rect x="66" y="10" width="24" height="24" fill="#1A2938"/>
+          <rect x="70" y="14" width="16" height="16" fill="white"/>
+          <rect x="73" y="17" width="10" height="10" fill="#E67E22"/>
+
+          <rect x="10" y="66" width="24" height="24" fill="#1A2938"/>
+          <rect x="14" y="70" width="16" height="16" fill="white"/>
+          <rect x="17" y="73" width="10" height="10" fill="#E67E22"/>
+
+          <rect x="42" y="15" width="6" height="6" fill="#1A2938"/>
+          <rect x="52" y="20" width="6" height="6" fill="#1A2938"/>
+          <rect x="45" y="32" width="6" height="6" fill="#1A2938"/>
+          <rect x="25" y="45" width="6" height="6" fill="#1A2938"/>
+          <rect x="35" y="45" width="8" height="8" fill="#E67E22"/>
+          <rect x="50" y="45" width="6" height="6" fill="#1A2938"/>
+          <rect x="65" y="45" width="6" height="6" fill="#1A2938"/>
+          <rect x="80" y="45" width="6" height="6" fill="#1A2938"/>
+          <rect x="42" y="60" width="6" height="6" fill="#1A2938"/>
+          <rect x="55" y="65" width="6" height="6" fill="#1A2938"/>
+          <rect x="70" y="70" width="6" height="6" fill="#1A2938"/>
+          <rect x="80" y="80" width="8" height="8" fill="#1A2938"/>
+          <text x="50" y="55" font-size="6" font-weight="bold" fill="#1A2938" text-anchor="middle">LIVE SYNC</text>
+        </svg>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--navy-dark);">網址：</span>
+        <code style="background: #E2E8F0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;" id="qr-url-text">https://...</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: FIREBASE CLOUD CONFIG & RESET MODAL
+       ======================================================================== -->
+  <div class="modal-overlay" id="firebase-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="openFirebaseConfigModal()">✕</button>
+      <div style="font-size: 2rem; margin-bottom: 6px;">⚙️</div>
+      <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+        Firebase 雲端萬人同步設定
+      </h3>
+      <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 14px;">
+        貼入您的 Firebase Config JSON 即可啟動全球 CDN 與 Realtime Database 毫秒級推播。
+      </p>
+
+      <textarea id="firebase-config-input" class="custom-input" rows="7" style="font-family: monospace; font-size: 0.82rem;" placeholder='{\n  "apiKey": "...",\n  "databaseURL": "https://...",\n  "projectId": "..."\n}'></textarea>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <button class="tool-btn" style="flex: 1; background: var(--stamp-green); color: white; justify-content: center; padding: 10px;" onclick="saveCustomFirebaseConfig()">
+          💾 儲存並連線
+        </button>
+        <button class="tool-btn" style="background: #F2F4F7; justify-content: center; padding: 10px;" onclick="clearFirebaseConfig()">
+          🔄 還原預設
+        </button>
+      </div>
+
+      <div style="border-top: var(--border-thin); padding-top: 14px; text-align: left;">
+        <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--detective-red); margin-bottom: 6px;">
+          🗑️ 講者場次重置專區
+        </h4>
+        <p style="font-size: 0.8rem; color: #64748B; margin-bottom: 8px;">
+          若是開啟新的一場宣講，可點擊下方按鈕清空 Firebase 與本機上的投票與留言數據：
+        </p>
+        <button class="tool-btn" style="background: #FDEDEC; border-color: var(--detective-red); color: var(--detective-red); width: 100%; justify-content: center;" onclick="resetLiveSessionData()">
+          ⚠️ 一鍵清空目前現場投票與留言
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Local Image Assets & Firebase Config -->
+  <script src="images_data.js"></script>
+  <script src="firebase_config.js"></script>
+
+  <!-- ========================================================================
+       JAVASCRIPT: REAL-TIME CONTROLLER & FIREBASE ENGINE
+       ======================================================================== -->
+  <script>
+    /* ==========================================================================
+       STATE & VARIABLES
+       ========================================================================== */
+    let currentChapter = 0;
+    const totalChapters = 9;
+    let timerDuration = 30 * 60;
+    let timerInterval = null;
+    let timerRunning = false;
+    let soundEnabled = true;
+    let isLaserActive = false;
+    let quizScore = 0;
+    let currentQuizIndex = 0;
+    let quizTimer = null;
+    let quizTimeLeft = 30;
+
+    // Local Fallback Image Data
+    if (typeof CASE_IMAGES === 'undefined') {
+      window.CASE_IMAGES = {
+        fake_1001: '山陀兒假訊息.png',
+        real_0726: '477158714_1144428560370864_6678778382469093885_n.jpg',
+        stamp_fake: 'medias-20241001-66fbcfbf7af3b.jpeg',
+        comparison: 'w=1200&h=1200&r=16888.png'
+      };
+    }
+
+    /* ==========================================================================
+       FIREBASE REALTIME DATABASE SYNC ENGINE
+       ========================================================================== */
+    let firebaseDb = null;
+    let isFirebaseReady = false;
+    let userSessionId = 'user_' + Math.random().toString(36).substring(2, 9);
+
+    function initFirebase() {
+      try {
+        let config = null;
+        const saved = localStorage.getItem('FIREBASE_CONFIG_SAVED');
+        if (saved) {
+          try { config = JSON.parse(saved); } catch(e) {}
+        }
+        if (!config && typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID') {
+          config = FIREBASE_CONFIG;
+        }
+
+        if (config && config.projectId && config.projectId !== 'YOUR_PROJECT_ID') {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(config);
+          }
+          firebaseDb = firebase.database();
+          isFirebaseReady = true;
+
+          // Update Status UI
+          document.getElementById('sync-status-indicator').className = 'sync-status-pill sync-online';
+          document.getElementById('sync-icon').innerText = '🟢';
+          document.getElementById('sync-text').innerText = 'Firebase 即時同步中';
+
+          // Set Up Realtime Listeners
+          setupFirebaseListeners();
+          setupPresenceTracker();
+          console.log('Firebase Realtime Database successfully initialized!');
+        } else {
+          console.log('Firebase config not active, running in local fallback mode.');
+          loadLocalDemoData();
+        }
+      } catch (err) {
+        console.warn('Firebase init error, using local fallback:', err);
+        loadLocalDemoData();
+      }
+    }
+
+    function setupFirebaseListeners() {
+      if (!firebaseDb) return;
+
+      // 1. Live Poll Sync for Case 1
+      firebaseDb.ref('votes/case1').on('value', (snapshot) => {
+        const data = snapshot.val() || { A: 0, B: 0, C: 0, D: 0 };
+        pollVotes = {
+          A: data.A || 0,
+          B: data.B || 0,
+          C: data.C || 0,
+          D: data.D || 0
+        };
+        updatePollUI(null);
+      });
+
+      // 2. Live Sticky Notes Sync
+      const wall = document.getElementById('sticky-notes-wall');
+      wall.innerHTML = ''; // clear default demo
+
+      firebaseDb.ref('feedbacks').limitToLast(40).on('child_added', (snapshot) => {
+        const item = snapshot.val();
+        renderStickyNote(item.name, item.tag, item.message, false);
+      });
+
+      // Count
+      firebaseDb.ref('feedbacks').on('value', (snapshot) => {
+        const count = snapshot.numChildren();
+        document.getElementById('feedback-count').innerText = `目前共 ${count} 則即時留言`;
+      });
+    }
+
+    function setupPresenceTracker() {
+      if (!firebaseDb) return;
+      const userRef = firebaseDb.ref('presence/' + userSessionId);
+      const connectedRef = firebaseDb.ref('.info/connected');
+
+      connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+          userRef.onDisconnect().remove();
+          userRef.set({
+            online: true,
+            joinedAt: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      });
+
+      firebaseDb.ref('presence').on('value', (snap) => {
+        const onlineCount = snap.numChildren() || 1;
+        document.getElementById('voter-count-display').innerText = `🕵️ 現場連線偵探：${onlineCount} 位`;
+      });
+    }
+
+    function saveCustomFirebaseConfig() {
+      const raw = document.getElementById('firebase-config-input').value.trim();
+      try {
+        const parsed = JSON.parse(raw);
+        localStorage.setItem('FIREBASE_CONFIG_SAVED', JSON.stringify(parsed));
+        alert('🎉 Firebase 設定儲存成功！網頁即將重新整理以套用連線。');
+        location.reload();
+      } catch (err) {
+        alert('❌ JSON 格式有誤，請確認複製完整之 firebaseConfig 物件！\n' + err.message);
+      }
+    }
+
+    function clearFirebaseConfig() {
+      localStorage.removeItem('FIREBASE_CONFIG_SAVED');
+      alert('已還原為預設設定！網頁即將重新整理。');
+      location.reload();
+    }
+
+    function resetLiveSessionData() {
+      if (!confirm('⚠️ 確定要清空現場投票與便利貼留言數據嗎？（此動作無法復原）')) return;
+      if (firebaseDb) {
+        firebaseDb.ref('votes/case1').set({ A: 0, B: 0, C: 0, D: 0 });
+        firebaseDb.ref('feedbacks').remove();
+        alert('✅ 雲端現場數據已成功清空重置！');
+      } else {
+        pollVotes = { A: 0, B: 0, C: 0, D: 0 };
+        document.getElementById('sticky-notes-wall').innerHTML = '';
+        updatePollUI(null);
+        alert('✅ 本機數據已重置！');
+      }
+    }
+
+    function openFirebaseConfigModal() {
+      playSound('click');
+      const m = document.getElementById('firebase-modal');
+      m.classList.toggle('active');
+      const saved = localStorage.getItem('FIREBASE_CONFIG_SAVED');
+      if (saved) {
+        document.getElementById('firebase-config-input').value = saved;
+      }
+    }
+
+    /* ==========================================================================
+       LOCAL DEMO DATA FALLBACK
+       ========================================================================== */
+    function loadLocalDemoData() {
+      const wall = document.getElementById('sticky-notes-wall');
+      if (wall.children.length === 0) {
+        renderStickyNote('三年二班 宇軒媽媽', '💡 心得共學', '以前看到班群的圖都會緊張直接轉發，今天才知道「急」是假訊息最常利用的心理，以後會先看人事行政總處官網！', false);
+        renderStickyNote('五年一班 冠廷爸爸', '🤖 AI 使用困惑', '「把 AI 當陪練員」的概念很棒！回家會和孩子試試看讓 AI 先出 3 個問題引導思考，而不是直接幫忙寫作業。', false);
+      }
+    }
+
+    /* ==========================================================================
+       WEB AUDIO SYNTHESIZER
+       ========================================================================== */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'correct') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.1);
+          osc.frequency.setValueAtTime(783.99, now + 0.2);
+          osc.frequency.setValueAtTime(1046.50, now + 0.3);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+          osc.start(now);
+          osc.stop(now + 0.45);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.25);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'stamp') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-btn');
+      btn.innerHTML = soundEnabled ? '🔊 音效' : '🔇 靜音';
+      if (soundEnabled) playSound('click');
+    }
+
+    /* ==========================================================================
+       CHAPTER NAVIGATION
+       ========================================================================== */
+    function switchChapter(index) {
+      if (index < 0 || index >= totalChapters) return;
+      currentChapter = index;
+      playSound('click');
+
+      const tabs = document.querySelectorAll('.chapter-tab');
+      tabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+
+      const sections = document.querySelectorAll('.case-chapter-section');
+      sections.forEach((sec, i) => sec.classList.toggle('active', i === index));
+
+      document.getElementById('current-chapter-indicator').innerText = 
+        String(index).padStart(2, '0') + ' / ' + String(totalChapters - 1).padStart(2, '0');
+
+      document.getElementById('btn-prev-chap').disabled = (index === 0);
+      document.getElementById('btn-next-chap').disabled = (index === totalChapters - 1);
+
+      if (index === 4) {
+        startQuizTimer();
+      } else {
+        clearInterval(quizTimer);
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextChapter() {
+      if (currentChapter < totalChapters - 1) switchChapter(currentChapter + 1);
+    }
+    function prevChapter() {
+      if (currentChapter > 0) switchChapter(currentChapter - 1);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') nextChapter();
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevChapter();
+      else if (e.key.toLowerCase() === 'f') toggleFullscreen();
+      else if (e.key.toLowerCase() === 'l') toggleLaserPointer();
+    });
+
+    /* ==========================================================================
+       PRESENTER TIMER
+       ========================================================================== */
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const badge = document.getElementById('timer-display');
+      const digits = document.getElementById('timer-digits');
+      digits.innerText = formatTime(timerDuration);
+      if (timerDuration <= 180 && timerDuration > 0) {
+        badge.classList.add('warning');
+      } else {
+        badge.classList.remove('warning');
+      }
+    }
+
+    function toggleTimer() {
+      playSound('click');
+      const btn = document.getElementById('timer-toggle-btn');
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        btn.innerHTML = '▶️ 繼續';
+      } else {
+        timerRunning = true;
+        btn.innerHTML = '⏸️ 暫停';
+        timerInterval = setInterval(() => {
+          if (timerDuration > 0) {
+            timerDuration--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            btn.innerHTML = '🔄 重設';
+            playSound('stamp');
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer(minutes) {
+      playSound('click');
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerDuration = (minutes || 30) * 60;
+      document.getElementById('timer-toggle-btn').innerHTML = '▶️ 計時';
+      updateTimerDisplay();
+    }
+
+    /* ==========================================================================
+       LASER POINTER & SPOTLIGHT
+       ========================================================================== */
+    function toggleLaserPointer() {
+      isLaserActive = !isLaserActive;
+      document.body.classList.toggle('laser-active', isLaserActive);
+      const btn = document.getElementById('laser-btn');
+      btn.classList.toggle('active', isLaserActive);
+      playSound('click');
+      if (isLaserActive) initSpotlight();
+    }
+
+    function initSpotlight() {
+      const canvas = document.getElementById('spotlight-layer');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isLaserActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(e.clientX, e.clientY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#FF0000';
+        ctx.shadowColor = '#FF3333';
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    function toggleFullscreen() {
+      playSound('click');
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    /* ==========================================================================
+       CASE 1: CLUES & INTERACTIVE POLL
+       ========================================================================== */
+    const cluesData = {
+      1: {
+        title: "🔍 破綻 1：字體與排版毛邊",
+        desc: "仔細放大「10/1(二)」會發現字體為非官方常規黑體，邊緣有明顯二次塗改壓縮的鋸齒毛邊！"
+      },
+      2: {
+        title: "🔍 破綻 2：背景水滴套版一模一樣",
+        desc: "背景的粉紫雨滴光澤，與 2024 年 7 月 26 日凱米颱風的官方宣導圖完全一模一樣，實為舊圖換字！"
+      },
+      3: {
+        title: "🔍 破綻 3：缺乏官方發布時間戳記",
+        desc: "官方正式宣導圖右下角皆會附上精確發布年月日時（如 2024/07/25 20:00 發布），此圖遭蓄意裁切！"
+      }
+    };
+
+    function showClue(id) {
+      playSound('click');
+      const box = document.getElementById('clue-callout-box');
+      document.getElementById('clue-title').innerText = cluesData[id].title;
+      document.getElementById('clue-desc').innerText = cluesData[id].desc;
+      box.style.display = 'block';
+    }
+
+    let pollVotes = { A: 4, B: 9, C: 15, D: 2 };
+
+    function castVote(caseId, option) {
+      playSound('stamp');
+      
+      // If Firebase Connected, push transaction to cloud
+      if (firebaseDb) {
+        firebaseDb.ref(`votes/${caseId}/${option}`).transaction(c => (c || 0) + 1);
+      } else {
+        pollVotes[option]++;
+        updatePollUI(option);
+      }
+
+      // If running on GAS, also submit
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.submitPollAnswer(caseId, option);
+      }
+    }
+
+    function updatePollUI(chosenOption) {
+      const total = (pollVotes.A + pollVotes.B + pollVotes.C + pollVotes.D) || 1;
+      ['A', 'B', 'C', 'D'].forEach(opt => {
+        const count = pollVotes[opt] || 0;
+        const pct = Math.round((count / total) * 100);
+        document.getElementById(`bar-${opt}`).style.width = pct + '%';
+        document.getElementById(`pct-${opt}`).innerText = `${pct}% (${count}票)`;
+        
+        const btn = document.getElementById(`vote-opt-${opt}`);
+        if (opt === chosenOption) {
+          btn.classList.add('selected');
+        }
+      });
+      document.getElementById('vote-feedback').style.display = 'block';
+    }
+
+    function flipCard(el) {
+      playSound('click');
+      el.classList.toggle('flipped');
+    }
+
+    function flipDisguise(el) {
+      playSound('click');
+      el.style.transform = 'scale(1.03)';
+      setTimeout(() => el.style.transform = 'none', 200);
+    }
+
+    function toggleComparisonModal() {
+      playSound('click');
+      document.getElementById('comparison-modal').classList.toggle('active');
+    }
+
+    function openQRModal() {
+      playSound('click');
+      document.getElementById('qr-modal').classList.toggle('active');
+      document.getElementById('qr-url-text').innerText = window.location.href;
+    }
+
+    /* ==========================================================================
+       STEP 4 口訣 INTERACTION
+       ========================================================================== */
+    const stepDetails = {
+      1: {
+        icon: "🛑",
+        title: "第 1 步：停 (Stop) —— 守住第一道防線",
+        sub: "「轉發只要一秒，闢謠卻要跑斷腿」",
+        body: `<ul>
+          <li><strong>深呼吸 3 秒：</strong>特別是當訊息讓你感到「極度憤怒」、「極度驚恐」或「急著想告訴親朋好友」時。</li>
+          <li><strong>不點讚、不轉發：</strong>演算法會因為轉發擴散熱度，不轉傳就等於斬斷謠言傳播鏈。</li>
+          <li><strong>不轉存截圖：</strong>模糊的截圖往往去除了原始發文者與時間，最容易產生誤解。</li>
+        </ul>`
+      },
+      2: {
+        icon: "🔎",
+        title: "第 2 步：查 (Check) —— 檢驗身分與時間戳",
+        sub: "「看起來像官方，不代表來自官方」",
+        body: `<ul>
+          <li><strong>查來源帳號：</strong>是否有官方藍勾勾、官方 LINE 綠色/藍色認證盾牌？</li>
+          <li><strong>查發布時間：</strong>這是今天發生的事嗎？還是拿 3 年前的舊天災影片當最新動態？</li>
+          <li><strong>查作者背景：</strong>是專業機構？還是沒有任何具名來源的內容農場？</li>
+        </ul>`
+      },
+      3: {
+        icon: "👥",
+        title: "第 3 步：找 (Find) —— 雙重獨立來源交叉驗證",
+        sub: "「孤證不立，交叉比對最安心」",
+        body: `<ul>
+          <li><strong>找 2 家以上獨立權威管道：</strong>不可互為抄襲轉載的二手媒體。</li>
+          <li><strong>使用事實查核工具：</strong>台灣事實查核中心 (TFC)、MyGoPen、Cofacts 搜尋關鍵字。</li>
+          <li><strong>詢問學校或官方窗口：</strong>直接看學校電子聯絡簿或官方公告專區。</li>
+        </ul>`
+      },
+      4: {
+        icon: "🏃",
+        title: "第 4 步：追 (Trace) —— 追溯原始素材與脈絡",
+        sub: "「還原完整脈絡，擊破斷章取義」",
+        body: `<ul>
+          <li><strong>以圖搜圖：</strong>使用 Google 智慧鏡頭 / 圖片搜尋找出原始照片拍攝年份。</li>
+          <li><strong>尋找完整談話影音：</strong>不只看 10 秒短影音剪輯，確認說話者真實語意。</li>
+          <li><strong>主動提供闢謠澄清：</strong>若發現親友群組誤傳，以溫和有禮的方式提供官方闢謠連結。</li>
+        </ul>`
+      }
+    };
+
+    function activateStep(stepNum) {
+      playSound('click');
+      const boxes = document.querySelectorAll('.step-box');
+      boxes.forEach((b, i) => b.classList.toggle('active', (i + 1) === stepNum));
+
+      const data = stepDetails[stepNum];
+      document.getElementById('step-detail-icon').innerText = data.icon;
+      document.getElementById('step-detail-title').innerText = data.title;
+      document.getElementById('step-detail-sub').innerText = data.sub;
+      document.getElementById('step-detail-body').innerHTML = data.body;
+    }
+
+    /* ==========================================================================
+       QUIZ CHALLENGE LOGIC
+       ========================================================================== */
+    const quizQuestions = [
+      {
+        q: "【轉傳截圖】「教育部剛宣布：下學期開始，所有學生都必須購買 AI 平板。」你第一個要查的是？",
+        options: [
+          "來源是誰？誰第一個轉發到班群的？",
+          "發布日期是哪一年、哪一天？",
+          "教育部官方網站的正式原文公告？",
+          "網路上有沒有其他人在討論？"
+        ],
+        ans: 2,
+        title: "正解：C 查教育部官方網站原文！",
+        exp: "重大教育政策必定會在教育部官網首頁或正式公文發布。截圖極易被修圖偽造，直奔官方原文是破解假政策的最快途徑！"
+      },
+      {
+        q: "【班群急訊】「老師臨時通知：明天要帶 2,000 元材料費，請家長先線上轉帳」此時最適當的做法是？",
+        options: [
+          "怕孩子明天沒教材，立刻依照帳號轉帳",
+          "在班群直接附和並提醒其他家長趕快繳費",
+          "先停住！透過學校既有聯絡簿或學校官方電話向老師親自確認",
+          "轉發到別班群組詢問其他班級是否也要繳費"
+        ],
+        ans: 2,
+        title: "正解：C 透過既有聯絡簿或電話親自確認！",
+        exp: "金錢交易與帳號訊息務必遵循『零信任原則』。班群帳號可能遭盜用，必須透過既有可信的雙向管道向校方求證。"
+      },
+      {
+        q: "【作業檢視】孩子說：「這份報告是 AI 寫的，但裡面的內容保證都是真的！」身為家長應該？",
+        options: [
+          "直接幫孩子列印交給老師",
+          "挑出文章中 3 個具體數據主張，請孩子找出來源出處並用自己的話說一遍",
+          "立刻沒收電腦與手機，嚴禁使用 AI",
+          "誇獎孩子很會使用科技省時間"
+        ],
+        ans: 1,
+        title: "正解：B 挑出 3 個主張，請孩子找來源並親口說明！",
+        exp: "AI 常出現『幻覺（Hallucination）』捏造事實。訓練孩子對 AI 生成內容進行『事實查核』與『口頭重述』，才是最珍貴的資訊思維鍛鍊！"
+      },
+      {
+        q: "【火爆影音】網傳一段「校長說話極度激烈」的 10 秒短影音，引發網路熱議，身為偵探你該？",
+        options: [
+          "立刻留言批評校長",
+          "相信影片不會騙人，轉傳給其他家長討論",
+          "警惕斷章取義與深偽語音，尋找學校完整公開錄影與官方正式聲明",
+          "直接打電話到 1999 投訴"
+        ],
+        ans: 2,
+        title: "正解：C 警惕斷章取義，尋找完整全片與官方聲明！",
+        exp: "10 秒短影音去除了前後上下文，甚至可能是 AI 變臉變聲。務必找到『完整全片』還原情境，切勿隨情緒起舞。"
+      }
+    ];
+
+    function startQuizTimer() {
+      clearInterval(quizTimer);
+      quizTimeLeft = 30;
+      updateQuizProgressBar();
+      quizTimer = setInterval(() => {
+        if (quizTimeLeft > 0) {
+          quizTimeLeft--;
+          updateQuizProgressBar();
+        } else {
+          clearInterval(quizTimer);
+          document.getElementById('quiz-countdown-num').innerText = '⏰ 時間到！';
+          playSound('wrong');
+          revealQuizAnswer(-1);
+        }
+      }, 1000);
+    }
+
+    function updateQuizProgressBar() {
+      const pct = (quizTimeLeft / 30) * 100;
+      document.getElementById('quiz-progress-bar').style.width = pct + '%';
+      document.getElementById('quiz-countdown-num').innerText = `⏳ 倒數 ${quizTimeLeft} 秒`;
+    }
+
+    function answerQuiz(chosenIndex) {
+      clearInterval(quizTimer);
+      revealQuizAnswer(chosenIndex);
+    }
+
+    function revealQuizAnswer(chosenIndex) {
+      const q = quizQuestions[currentQuizIndex];
+      const isCorrect = (chosenIndex === q.ans);
+      
+      if (isCorrect) {
+        quizScore += 25;
+        document.getElementById('quiz-score-badge').innerText = quizScore + ' 分';
+        playSound('correct');
+        launchConfetti();
+      } else {
+        playSound('wrong');
+      }
+
+      const buttons = document.querySelectorAll('#quiz-options-container .quiz-choice-btn');
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.ans) btn.classList.add('correct');
+        else if (i === chosenIndex) btn.classList.add('wrong');
+      });
+
+      const expBox = document.getElementById('quiz-explanation-box');
+      const stamp = document.getElementById('quiz-result-stamp');
+      stamp.className = isCorrect ? 'stamp-badge stamp-official' : 'stamp-badge stamp-fake';
+      stamp.innerText = isCorrect ? '✅ 答對了！' : '❌ 差一點！';
+      
+      document.getElementById('quiz-exp-title').innerText = q.title;
+      document.getElementById('quiz-exp-text').innerText = q.exp;
+      expBox.style.display = 'block';
+    }
+
+    function nextQuizQuestion() {
+      playSound('click');
+      currentQuizIndex++;
+      if (currentQuizIndex >= quizQuestions.length) currentQuizIndex = 0;
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      const q = quizQuestions[currentQuizIndex];
+      document.getElementById('quiz-q-num').innerText = `QUESTION 0${currentQuizIndex + 1} / 04`;
+      document.getElementById('quiz-question-text').innerText = q.q;
+      
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-choice-btn';
+        btn.onclick = () => answerQuiz(i);
+        btn.innerHTML = `<span class="poll-badge-letter">${letters[i]}</span> <span>${opt}</span>`;
+        container.appendChild(btn);
+      });
+
+      document.getElementById('quiz-explanation-box').style.display = 'none';
+      startQuizTimer();
+    }
+
+    /* ==========================================================================
+       ROLE PERSPECTIVE DOSSIERS
+       ========================================================================== */
+    const roleDossiers = {
+      student: `
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 2.2rem;">🎒</span>
+          <div>
+            <h4 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark);">學生代表：做會提問、會查證、會署名的人</h4>
+            <p style="font-size: 0.85rem; color: #64748B;">「我不是 AI 的代言人；我是成果的負責人！」</p>
+          </div>
+        </div>
+        <div class="grid-3col" style="margin-top: 14px;">
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--detective-red);">🚫 不照單全收</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">AI 給出的第一個答案絕不是最後答案，必須親自尋找第二出處核對事實。</p>
+          </div>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--amber-accent);">🗣️ 說得出思考過程</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">清楚說明：AI 幫了什麼大綱？我自己改寫了什麼？我核實了哪些數據？</p>
+          </div>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--stamp-green);">🛡️ 保護自己與同學</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">絕不把個人、家人、同學或老師的姓名、照片、成績與隱私資料輸入 AI 模型。</p>
+          </div>
+        </div>
+      `,
+      parent: `
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 2.2rem;">👨‍👩‍👧</span>
+          <div>
+            <h4 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark);">家長代表：做能一起判斷，而不只是沒收手機的大人</h4>
+            <p style="font-size: 0.85rem; color: #64748B;">「把質疑換成好奇，陪伴孩子培養數位免疫力」</p>
+          </div>
+        </div>
+        <div class="grid-3col" style="margin-top: 14px;">
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--amber-accent);">💬 換一句有力量的問法</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">不問「這是不是抄 AI？」，改問「這段很精彩，你是怎麼判斷它可信的？」</p>
+          </div>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--stamp-green);">🔎 遇到可疑訊息共查共學</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">邀請孩子一起當小偵探，打開查核中心示範查證步驟，建立親子信任。</p>
+          </div>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--navy-dark);">📜 訂立明確家庭數位約定</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">不轉未查證急訊、不公開他人照片、保護家庭個資，大人以身作則。</p>
+          </div>
+        </div>
+      `,
+      teacher: `
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 2.2rem;">👩‍🏫</span>
+          <div>
+            <h4 style="font-size: 1.25rem; font-weight: 900; color: var(--navy-dark);">老師代表：示範判斷的過程，不只檢查最後答案</h4>
+            <p style="font-size: 0.85rem; color: #64748B;">「教育的目標不是抓出誰用了 AI，而是讓學生能說明自己的思考」</p>
+          </div>
+        </div>
+        <div class="grid-3col" style="margin-top: 14px;">
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--navy-dark);">📝 說清楚作業使用指引</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">明確告知哪些作業允許使用 AI 腦力激盪，以及如何正確進行引用與標示。</p>
+          </div>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--amber-accent);">🔍 重視草稿與思考歷程</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">加入課堂口頭說明、同儕互評與修訂紀錄，看見學生真正的思維成長。</p>
+          </div>
+          <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--stamp-green);">🥊 拿 AI 產出練習抓錯</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 4px;">直接將 AI 生成的偏誤文章作為教材，讓全班一起練習挑出邏輯漏洞與假數據。</p>
+          </div>
+        </div>
+      `
+    };
+
+    function switchRole(roleKey) {
+      playSound('click');
+      const btns = document.querySelectorAll('.role-tab-btn');
+      btns.forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.includes(roleKey === 'student' ? '學生' : roleKey === 'parent' ? '家長' : '老師'));
+      });
+      document.getElementById('role-dossier-content').innerHTML = roleDossiers[roleKey];
+    }
+    switchRole('student');
+
+    /* ==========================================================================
+       CERTIFICATE GENERATOR
+       ========================================================================== */
+    function updateCertPreview() {
+      const sName = document.getElementById('cert-student-name').value || '林小明';
+      const pName = document.getElementById('cert-parent-name').value || '王家長';
+      document.getElementById('preview-student').innerText = sName;
+      document.getElementById('preview-parent').innerText = pName;
+
+      const list = document.getElementById('preview-pledges-list');
+      list.innerHTML = '';
+
+      const pledges = [
+        { id: 'pledge-1', text: '情緒越急，越先停下來。' },
+        { id: 'pledge-2', text: '資訊越驚人，越找原始來源。' },
+        { id: 'pledge-3', text: 'AI 越方便，越保留獨立思考。' },
+        { id: 'pledge-4', text: '遇到困難，願意親子一起討論。' }
+      ];
+
+      pledges.forEach(p => {
+        if (document.getElementById(p.id).checked) {
+          const li = document.createElement('li');
+          li.innerText = p.text;
+          list.appendChild(li);
+        }
+      });
+    }
+
+    function generateCertSuccess() {
+      playSound('stamp');
+      launchConfetti();
+
+      const sName = document.getElementById('cert-student-name').value.trim() || '林小明';
+      const pName = document.getElementById('cert-parent-name').value.trim() || '王家長';
+
+      // Push to Firebase if online
+      if (firebaseDb) {
+        firebaseDb.ref('pledges').push({
+          student: sName,
+          parent: pName,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+
+      alert('🎉 恭喜！家庭數位約定已完成簽署與認證！您可以點選「列印 / 另存 PDF」儲存榮譽約定書。');
+    }
+
+    const today = new Date();
+    document.getElementById('cert-date-text').innerText = 
+      `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
+
+    /* ==========================================================================
+       FEEDBACK & REAL-TIME STICKY WALL
+       ========================================================================== */
+    function postFeedback() {
+      const name = document.getElementById('feedback-name').value.trim() || '熱心家長';
+      const tag = document.getElementById('feedback-tag').value;
+      const msg = document.getElementById('feedback-msg').value.trim();
+
+      if (!msg) {
+        alert('請先輸入您想分享的心得或問題喔！');
+        return;
+      }
+
+      playSound('stamp');
+      document.getElementById('feedback-msg').value = '';
+      launchConfetti();
+
+      if (firebaseDb) {
+        firebaseDb.ref('feedbacks').push({
+          name: name,
+          tag: tag,
+          message: msg,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+      } else {
+        renderStickyNote(name, tag, msg, true);
+      }
+
+      // If on GAS
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.submitFeedback(name, tag, msg);
+      }
+    }
+
+    function renderStickyNote(name, tag, msg, prepend = true) {
+      const wall = document.getElementById('sticky-notes-wall');
+      const card = document.createElement('div');
+      card.className = 'evidence-card';
+      card.style.background = tag.includes('AI') ? '#F0FDF4' : tag.includes('提問') ? '#FEF2F2' : '#FFFDF0';
+      card.style.borderLeft = `6px solid ${tag.includes('AI') ? 'var(--stamp-green)' : tag.includes('提問') ? 'var(--detective-red)' : 'var(--amber-accent)'}`;
+      card.style.animation = 'fadeInSlide 0.3s ease';
+
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #64748B; margin-bottom: 4px;">
+          <span>${escapeHtml(name)}</span>
+          <span class="ref-link-badge">${escapeHtml(tag)}</span>
+        </div>
+        <p style="font-size: 0.95rem; color: var(--navy-dark); font-weight: 700;">
+          ${escapeHtml(msg)}
+        </p>
+      `;
+
+      if (prepend) {
+        wall.insertBefore(card, wall.firstChild);
+      } else {
+        wall.appendChild(card);
+      }
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    /* ==========================================================================
+       CONFETTI CANNON ANIMATION
+       ========================================================================== */
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#E67E22', '#2ECC71', '#F1C40F', '#E74C3C', '#3498DB', '#9B59B6'];
+
+      for (let i = 0; i < 70; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 300,
+          y: canvas.height / 2 + (Math.random() - 0.5) * 200,
+          w: Math.random() * 10 + 6,
+          h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 14,
+          vy: Math.random() * -12 - 4,
+          rot: Math.random() * 360,
+          vrot: (Math.random() - 0.5) * 10,
+          alpha: 1
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = 0;
+        particles.forEach(p => {
+          if (p.alpha > 0.02) {
+            active++;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.45;
+            p.rot += p.vrot;
+            p.alpha -= 0.015;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot * Math.PI / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+            ctx.restore();
+          }
+        });
+
+        if (active > 0) requestAnimationFrame(render);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      render();
+    }
+
+    // Initialize Firebase Engine on Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      initFirebase();
+    });
+  </script>
+</body>
+</html>
