@@ -138,7 +138,8 @@
     }
 
     .toolbar-container {
-      max-width: 1280px;
+      max-width: 1240px;
+      width: 100%;
       margin: 0 auto;
       padding: 8px 14px;
       display: flex;
@@ -289,7 +290,7 @@
     }
 
     /* ==========================================================================
-       3. NAVIGATION TABS
+       3. NAVIGATION TABS (CENTERED & SIZED TO MATCH CASE FOLDER)
        ========================================================================== */
     .chapter-nav {
       background: #EFE7D8;
@@ -297,6 +298,8 @@
       overflow-x: auto;
       scrollbar-width: thin;
       -webkit-overflow-scrolling: touch;
+      display: flex;
+      justify-content: center;
     }
     .chapter-nav::-webkit-scrollbar {
       height: 6px;
@@ -306,12 +309,14 @@
       border-radius: 3px;
     }
     .chapter-nav-inner {
-      max-width: 1280px;
+      max-width: 1240px;
+      width: 100%;
       margin: 0 auto;
       display: flex;
-      padding: 6px 12px 0;
-      gap: 6px;
-      width: max-content;
+      padding: 6px 14px 0;
+      gap: 5px;
+      justify-content: space-between;
+      flex-wrap: nowrap;
     }
 
     .chapter-tab {
@@ -320,16 +325,19 @@
       border: var(--border-thin);
       border-bottom: none;
       border-radius: 12px 12px 0 0;
-      padding: 10px 16px;
-      font-size: 0.98rem;
+      padding: 8px 10px;
+      font-size: 0.94rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 7px;
+      justify-content: center;
+      gap: 6px;
       transition: all 0.2s;
       white-space: nowrap;
-      min-height: 44px;
+      min-height: 42px;
+      flex: 1 1 0px;
+      text-align: center;
     }
     .chapter-tab:hover {
       background: #F4ECE0;
@@ -339,7 +347,7 @@
       background: var(--bg-desk);
       color: var(--navy-dark);
       border-color: var(--border-dark);
-      padding-top: 12px;
+      padding-top: 10px;
       margin-top: -2px;
       font-weight: 900;
       box-shadow: 0 -4px 0 var(--amber-accent);
@@ -347,19 +355,34 @@
     .chapter-tab .badge-num {
       background: var(--navy-dark);
       color: white;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       border-radius: 6px;
-      padding: 2px 7px;
+      padding: 2px 6px;
     }
     .chapter-tab.active .badge-num {
       background: var(--amber-accent);
+    }
+
+    @media (max-width: 1100px) {
+      .chapter-nav {
+        justify-content: flex-start;
+      }
+      .chapter-nav-inner {
+        width: max-content;
+        justify-content: flex-start;
+      }
+      .chapter-tab {
+        flex: 0 0 auto;
+        padding: 8px 14px;
+      }
     }
 
     /* ==========================================================================
        4. MAIN CONTAINER & PRESENTATION SLIDES
        ========================================================================== */
     .main-stage {
-      max-width: 1200px;
+      max-width: 1240px;
+      width: 100%;
       margin: 16px auto 100px;
       padding: 0 14px;
     }
@@ -2776,6 +2799,9 @@
 
       const tabs = document.querySelectorAll('.chapter-tab');
       tabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+      if (tabs[index]) {
+        tabs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
 
       const sections = document.querySelectorAll('.case-chapter-section');
       sections.forEach((sec, i) => sec.classList.toggle('active', i === index));
