@@ -2998,19 +2998,29 @@
         if (!qData) return;
         
         if (currentRole === 'audience') {
-          if (qData.state === 'running' && quizState !== 'running') {
+          if (qData.state === 'running') {
+            if (quizState !== 'running' || currentQuizIndex !== (qData.qIndex || 0)) {
+              currentQuizIndex = qData.qIndex || 0;
+              quizState = 'running';
+              quizTimeLeft = 30;
+              delete myQuizAnswers[currentQuizIndex];
+              localStorage.removeItem(`MY_QUIZ_${currentQuizIndex}`);
+              renderQuizQuestion();
+              startQuizTimer();
+              showToast(`⚡ 講師已開始第 0${currentQuizIndex + 1} 題 30 秒限時挑戰！`);
+            }
+          } else if (qData.state === 'revealed') {
             currentQuizIndex = qData.qIndex || 0;
-            quizState = 'running';
-            quizTimeLeft = 30;
-            renderQuizQuestion();
-            startQuizTimer();
-            showToast(`⚡ 講師已開始第 0${currentQuizIndex + 1} 題 30 秒限時挑戰！`);
-          } else if (qData.state === 'revealed' && quizState !== 'revealed') {
-            currentQuizIndex = qData.qIndex || 0;
-            revealQuizAnswer(false);
-          } else if (qData.state === 'ready' && (currentQuizIndex !== qData.qIndex || quizState !== 'ready')) {
+            if (quizState !== 'revealed') {
+              revealQuizAnswer(false);
+            }
+          } else if (qData.state === 'ready') {
             currentQuizIndex = qData.qIndex || 0;
             quizState = 'ready';
+            clearInterval(quizTimer);
+            quizTimeLeft = 30;
+            delete myQuizAnswers[currentQuizIndex];
+            localStorage.removeItem(`MY_QUIZ_${currentQuizIndex}`);
             renderQuizQuestion();
           } else if (qData.state === 'completed') {
             document.getElementById('quiz-area').style.display = 'none';
@@ -3727,6 +3737,8 @@
       renderQuizQuestion();
 
       if (firebaseDb) {
+        firebaseDb.ref(`votes/quiz/${currentQuizIndex}`).set({ A: 0, B: 0, C: 0, D: 0 });
+        firebaseDb.ref(`user_votes/quiz/${currentQuizIndex}`).remove();
         firebaseDb.ref('session/quiz').set({
           qIndex: currentQuizIndex,
           state: 'running',
@@ -3979,8 +3991,8 @@
       }
 
       letters.forEach((letter, i) => {
-        const count = votes[letter] || 0;
-        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const count = (quizState === 'ready') ? 0 : (votes[letter] || 0);
+        const pct = (quizState === 'ready' || total === 0) ? 0 : Math.round((count / total) * 100);
         const bar = document.getElementById(`quiz-bar-${letter}`);
         const pctEl = document.getElementById(`quiz-pct-${letter}`);
         const btn = document.getElementById(`quiz-btn-${letter}`);
@@ -3989,7 +4001,7 @@
         if (pctEl) pctEl.innerText = `${pct}% (${count}票)`;
 
         if (btn) {
-          if (currentRole === 'audience' && letter === userChoice) {
+          if (quizState === 'running' && currentRole === 'audience' && letter === userChoice) {
             btn.classList.add('selected');
           } else {
             btn.classList.remove('selected');
