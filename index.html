@@ -476,49 +476,6 @@
       display: block;
     }
 
-    .clue-pin {
-      position: absolute;
-      width: 36px;
-      height: 36px;
-      background: var(--detective-red);
-      color: white;
-      border: 3px solid white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-      animation: pulsePin 1.5s infinite;
-      z-index: 10;
-      transform: translate(-50%, -50%);
-    }
-    @keyframes pulsePin {
-      0% { transform: translate(-50%, -50%) scale(1); }
-      50% { transform: translate(-50%, -50%) scale(1.18); }
-      100% { transform: translate(-50%, -50%) scale(1); }
-    }
-
-    .clue-callout {
-      position: absolute;
-      bottom: 12px;
-      left: 12px;
-      right: 12px;
-      background: rgba(26, 41, 56, 0.95);
-      color: white;
-      border: 3px solid #FFD166;
-      border-radius: var(--radius-sm);
-      padding: 16px;
-      font-size: var(--font-key);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-      display: none;
-      animation: slideUp 0.2s ease;
-      z-index: 20;
-    }
-
     /* Live Interactive Poll Component */
     .poll-box {
       background: #FFFDF9;
@@ -1211,7 +1168,7 @@
     </section>
 
     <!-- --------------------------------------------------------------------
-         CHAPTER 1: 案件一：停班停課破冰懸案（不提前爆雷，懸疑引導）
+         CHAPTER 1: 案件一：停班停課破冰懸案（投票前零劇透，投票後揭曉 3 大破綻）
          -------------------------------------------------------------------- -->
     <section class="case-chapter-section" id="chapter-1">
       <div class="case-folder">
@@ -1224,36 +1181,24 @@
           </div>
         </div>
 
+        <!-- STAGE 1: PURE VOTING & SUSPICIOUS IMAGE (ZERO HINTS / NO SPOILERS) -->
         <div class="grid-2col" style="margin-top: 16px;">
           
-          <!-- Left: Interactive Image Inspection -->
+          <!-- Left: Clean Suspicious Image without clues -->
           <div>
-            <div class="inspection-viewer" id="evidence-viewer">
+            <div class="inspection-viewer">
               <img id="fake-case-img" class="inspection-img" src="山陀兒假訊息.png" alt="班群流傳的停班停課圖卡" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
-              
-              <!-- Clue Pins -->
-              <div class="clue-pin" style="top: 38%; left: 50%;" onclick="showClue(1)" title="點擊檢視破綻 1">1</div>
-              <div class="clue-pin" style="top: 15%; left: 80%;" onclick="showClue(2)" title="點擊檢視破綻 2">2</div>
-              <div class="clue-pin" style="top: 80%; left: 30%;" onclick="showClue(3)" title="點擊檢視破綻 3">3</div>
-
-              <!-- Callout Box -->
-              <div class="clue-callout" id="clue-callout-box">
-                <strong id="clue-title" style="font-size: 1.35rem; color: #FFEAA7;">🔍 破綻發現！</strong>
-                <p id="clue-desc" style="margin-top: 6px; font-size: 1.15rem;"></p>
-              </div>
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap;">
-              <button class="tool-btn" onclick="showClue(1)">🔍 破綻 1：日期字體毛邊</button>
-              <button class="tool-btn" onclick="showClue(2)">🔍 破綻 2：背景水滴套版</button>
-              <button class="tool-btn" onclick="showClue(3)">🔍 破綻 3：缺少時間戳</button>
-            </div>
+            <p style="font-size: 0.95rem; color: #64748B; text-align: center; margin-top: 8px; font-weight: 700;">
+              ▲ 班群與社群平台瘋傳之停班停課圖卡（待鑑識）
+            </p>
           </div>
 
-          <!-- Right: Live Audience Poll & Decision -->
+          <!-- Right: Live Audience Poll -->
           <div>
             <div class="poll-box">
               <div class="poll-question">
-                <span>❓ 現場即時表態：如果是今晚 9:30 收到這張圖，你會怎麼做？</span>
+                <span>❓ 現場即時表態：如果你在今晚 9:30 收到這張圖，你會怎麼做？</span>
               </div>
               <div class="poll-options">
                 <button class="poll-btn" onclick="castVote('case1', 'A')" id="vote-opt-A">
@@ -1298,84 +1243,221 @@
               </div>
             </div>
 
-            <!-- Side-by-side Evidence Reveal (Revealed on click) -->
-            <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-cartoon);" id="mystery-reveal-box">
+            <!-- Trigger Button to Reveal Truth -->
+            <div style="background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-cartoon); text-align: center; margin-top: 14px;">
               <h4 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
-                🕵️ 案件真相還原：
+                🕵️ 各位偵探，大家都投好票了嗎？
               </h4>
-              <p style="font-size: 1.05rem; color: #475569; margin-bottom: 12px;">
-                這張圖到底是真是假？造假者到底動了什麼手腳？
+              <p style="font-size: 1rem; color: #475569; margin-bottom: 12px;">
+                請講者在全場投票完畢後，點擊下方按鈕揭曉本案真相與 3 大破綻！
               </p>
-              <button class="nav-ctrl-btn" onclick="toggleComparisonModal()" style="width: 100%; justify-content: center; font-size: 1.15rem;">
-                🔍 點此公佈真相：對照原始真圖 ➔
+              <button class="nav-ctrl-btn" id="reveal-truth-trigger-btn" onclick="revealCaseTruth()" style="width: 100%; justify-content: center; font-size: 1.15rem; background: var(--detective-red); padding: 14px;">
+                🔍 全場投票完畢 ➔ 點此揭曉案件真相與 3 大破綻
               </button>
             </div>
           </div>
         </div>
 
-        <div class="crime-tape"></div>
+        <!-- STAGE 2: FORENSIC INVESTIGATION & CLUES (HIDDEN INITIALLY, REVEALED ON CLICK) -->
+        <div id="case1-truth-section" style="display: none; margin-top: 32px; animation: fadeInSlide 0.5s ease;">
+          
+          <div class="crime-tape"></div>
 
-        <!-- 3 Psychological Triggers (Flip Cards) -->
-        <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
-          🧠 偵探心理破譯：為什麼大家會相信？（假訊息利用的不是無知，而是關心）
-        </h3>
+          <!-- Truth Banner -->
+          <div style="background: #FDEDEC; border: 3px solid var(--detective-red); border-radius: var(--radius-md); padding: 20px 24px; box-shadow: var(--shadow-cartoon); margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+              <span class="stamp-badge stamp-fake" style="font-size: 1.1rem;">❌ 鑑識結果：蓄意竄改之假圖卡！</span>
+            </div>
+            <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+              💥 真相大白：造假者擷取舊圖換字！市府 10/1「正常上班上課」
+            </h3>
+            <p style="font-size: 1.1rem; color: #334155; line-height: 1.7;">
+              這張在颱風前夕瘋傳的圖卡，實為造假者擷取 <strong>2024 年 7 月 26 日凱米颱風</strong> 的舊宣導圖，後製修改日期。市府第一時間火速發布澄清，並移送警方偵辦！
+            </p>
+          </div>
 
-        <div class="grid-3col">
-          <div class="flip-card" onclick="flipCard(this)">
-            <div class="flip-card-inner">
-              <div class="flip-card-front">
-                <div class="flip-card-icon">⚡</div>
-                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--detective-red);">「 急 」</h3>
-                <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">現在就得決定明天怎麼安排</p>
-                <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+          <!-- 3 Major Flaws with High-Resolution Visual Comparisons -->
+          <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
+            🔬 鑑識顯微鏡：這張圖到底露出了哪「3 大破綻」？
+          </h3>
+
+          <div class="grid-3col">
+            
+            <!-- FLAW 1: Magnified Font Artifacts -->
+            <div class="evidence-card" style="border-top: 8px solid var(--detective-red);">
+              <div class="evidence-card-header">
+                <span class="evidence-number">破綻 01</span>
+                <span style="font-size: 1.3rem;">🔍 字體塗改毛邊</span>
               </div>
-              <div class="flip-card-back">
-                <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">時間急迫陷阱</h4>
-                <p style="font-size: 1rem; line-height: 1.6;">
-                  晚上 9:30 大家正忙著安排隔天工作與接送孩子；<strong>越著急，越容易把「很像官方」直接當成「來自官方」！</strong>
+              <h4 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+                非官方常規黑體與塗改壓縮雜訊
+              </h4>
+              <div style="background: #1A2938; color: #FFEAA7; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center; border: var(--border-thin);">
+                <div style="font-size: 0.85rem; color: #CBD5E1; margin-bottom: 4px;">🔎 250% 局部放大特寫：</div>
+                <div style="font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; color: #FF6B6B;">
+                  「 10/1(二) 」
+                </div>
+                <div style="font-size: 0.85rem; color: #FADBD8; margin-top: 4px;">
+                  ⚠️ 字元邊緣有明顯鋸齒毛邊與色塊修補痕跡！
+                </div>
+              </div>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.6;">
+                官方製圖會使用乾淨的向量字體；而造假者用一般手機修圖軟體蓋字，放大即可看見二次壓縮產生的模糊雜訊與不協調間距。
+              </p>
+            </div>
+
+            <!-- FLAW 2: Exact Background Raindrop Template Reuse -->
+            <div class="evidence-card" style="border-top: 8px solid var(--amber-accent);">
+              <div class="evidence-card-header">
+                <span class="evidence-number">破綻 02</span>
+                <span style="font-size: 1.3rem;">🌧️ 背景水滴套版</span>
+              </div>
+              <h4 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+                背景雨滴光澤與 7/26 完全吻合
+              </h4>
+              <div style="background: #FEF9E7; border: var(--border-thin); border-radius: 8px; padding: 12px; margin: 10px 0;">
+                <div style="font-size: 0.95rem; font-weight: 900; color: var(--amber-accent); margin-bottom: 4px;">
+                  🔄 舊圖換字手法：
+                </div>
+                <p style="font-size: 0.95rem; color: #334155;">
+                  市長卡通肖像、撐傘姿勢、背景粉紫雨滴光澤，與 2 個月前的 7/26 凱米颱風官方圖 100% 一模一樣！
                 </p>
+              </div>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.6;">
+                造假者通常「懶得重新畫圖」，直接拿舊圖塗改日期最省事，這也是圖卡查核最容易抓到的馬腳。
+              </p>
+            </div>
+
+            <!-- FLAW 3: Missing Official Timestamp vs Real Timestamp -->
+            <div class="evidence-card" style="border-top: 8px solid var(--stamp-green);">
+              <div class="evidence-card-header">
+                <span class="evidence-number">破綻 03</span>
+                <span style="font-size: 1.3rem;">⏱️ 缺少官方時間戳</span>
+              </div>
+              <h4 style="font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
+                假圖蓄意裁切掉重要時間戳記
+              </h4>
+              <div style="background: #E8F8F5; border: 1px solid #A3E4D7; border-radius: 8px; padding: 12px; margin: 10px 0;">
+                <div style="font-size: 0.95rem; font-weight: 900; color: #117A65; margin-bottom: 4px;">
+                  ✅ 正確官方版必備：
+                </div>
+                <p style="font-size: 0.95rem; color: #196F3D;">
+                  右下角具備<strong>「發布日期與精確時間戳（例如 2024/07/25 20:00）」</strong>及官方發布核定標記。
+                </p>
+              </div>
+              <p style="font-size: 1rem; color: #475569; line-height: 1.6;">
+                假圖為了避免破綻，把底部有時間戳的部分完全剪掉。<strong>凡是沒有具體發布時間戳的截圖，一律視為高風險！</strong>
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Real vs Fake Official Side-by-Side Card Comparison -->
+          <div style="margin-top: 24px; background: white; border: var(--border-thick); border-radius: var(--radius-md); padding: 22px; box-shadow: var(--shadow-cartoon);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark);">
+                  🏛️ 嘉義市政府官方澄清與真假圖卡比對
+                </h3>
+                <p style="font-size: 1rem; color: #64748B;">
+                  左側為 7/26 原始真圖，中間為 10/1 變造假圖，右側為市府官方第一時間闢謠圖卡
+                </p>
+              </div>
+              <button class="nav-ctrl-btn" onclick="toggleComparisonModal()">
+                🖼️ 開啟大圖全螢幕比對 ➔
+              </button>
+            </div>
+
+            <div class="grid-3col">
+              <div style="text-align: center;">
+                <div style="background: var(--stamp-green-bg); padding: 6px; border: var(--border-thin); border-radius: 6px; font-weight: 900; color: #196F3D; margin-bottom: 6px;">
+                  ✅ 原始真圖 (7/26)
+                </div>
+                <img src="477158714_1144428560370864_6678778382469093885_n.jpg" style="width: 100%; border: var(--border-thin); border-radius: 8px;" alt="7/26 原始真圖" onerror="this.src=CASE_IMAGES.real_0726 || ''">
+              </div>
+
+              <div style="text-align: center;">
+                <div style="background: var(--detective-red-bg); padding: 6px; border: var(--border-thin); border-radius: 6px; font-weight: 900; color: #922B21; margin-bottom: 6px;">
+                  ❌ 變造假圖 (10/1)
+                </div>
+                <img src="山陀兒假訊息.png" style="width: 100%; border: var(--border-thin); border-radius: 8px;" alt="10/1 變造假圖" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
+              </div>
+
+              <div style="text-align: center;">
+                <div style="background: #EBF5FB; padding: 6px; border: var(--border-thin); border-radius: 6px; font-weight: 900; color: #2471A3; margin-bottom: 6px;">
+                  📢 市府官方澄清對照卡
+                </div>
+                <img src="w=1200&h=1200&r=16888.png" style="width: 100%; border: var(--border-thin); border-radius: 8px;" alt="市府澄清對照卡" onerror="this.src=CASE_IMAGES.comparison || ''">
               </div>
             </div>
           </div>
 
-          <div class="flip-card" onclick="flipCard(this)">
-            <div class="flip-card-inner">
-              <div class="flip-card-front">
-                <div class="flip-card-icon">😨</div>
-                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--amber-accent);">「 怕 」</h3>
-                <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">怕孩子不知道、怕自己漏接</p>
-                <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+          <div class="crime-tape"></div>
+
+          <!-- 3 Psychological Triggers (Flip Cards) -->
+          <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 16px;">
+            🧠 偵探心理破譯：為什麼大家會相信？（假訊息利用的不是無知，而是關心）
+          </h3>
+
+          <div class="grid-3col">
+            <div class="flip-card" onclick="flipCard(this)">
+              <div class="flip-card-inner">
+                <div class="flip-card-front">
+                  <div class="flip-card-icon">⚡</div>
+                  <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--detective-red);">「 急 」</h3>
+                  <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">現在就得決定明天怎麼安排</p>
+                  <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+                </div>
+                <div class="flip-card-back">
+                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">時間急迫陷阱</h4>
+                  <p style="font-size: 1rem; line-height: 1.6;">
+                    晚上 9:30 大家正忙著安排隔天工作與接送孩子；<strong>越著急，越容易把「很像官方」直接當成「來自官方」！</strong>
+                  </p>
+                </div>
               </div>
-              <div class="flip-card-back">
-                <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">FOMO 焦慮效應</h4>
-                <p style="font-size: 1rem; line-height: 1.6;">
-                  深怕漏接任何停課資訊影響孩子，這種出於關愛與責任的焦慮，被造假者精準利用為轉發動力。
-                </p>
+            </div>
+
+            <div class="flip-card" onclick="flipCard(this)">
+              <div class="flip-card-inner">
+                <div class="flip-card-front">
+                  <div class="flip-card-icon">😨</div>
+                  <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--amber-accent);">「 怕 」</h3>
+                  <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">怕孩子不知道、怕自己漏接</p>
+                  <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+                </div>
+                <div class="flip-card-back">
+                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">FOMO 焦慮效應</h4>
+                  <p style="font-size: 1rem; line-height: 1.6;">
+                    深怕漏接任何停課資訊影響孩子，這種出於關愛與責任的焦慮，被造假者精準利用為轉發動力。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card" onclick="flipCard(this)">
+              <div class="flip-card-inner">
+                <div class="flip-card-front">
+                  <div class="flip-card-icon">🤝</div>
+                  <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--stamp-green);">「 熟 」</h3>
+                  <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">訊息來自親友或班群很可信</p>
+                  <span class="flip-hint">點擊翻牌看破譯 ➔</span>
+                </div>
+                <div class="flip-card-back">
+                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">信任轉移盲點</h4>
+                  <p style="font-size: 1rem; line-height: 1.6;">
+                    我們信任班群裡的家長與朋友，但<strong>「對人的信任」不等於「訊息已被查證」</strong>。班群是傳播高速公路，不是查證起點！
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="flip-card" onclick="flipCard(this)">
-            <div class="flip-card-inner">
-              <div class="flip-card-front">
-                <div class="flip-card-icon">🤝</div>
-                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--stamp-green);">「 熟 」</h3>
-                <p style="font-size: 1.1rem; color: #475569; margin-top: 6px; font-weight: 700;">訊息來自親友或班群很可信</p>
-                <span class="flip-hint">點擊翻牌看破譯 ➔</span>
-              </div>
-              <div class="flip-card-back">
-                <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">信任轉移盲點</h4>
-                <p style="font-size: 1rem; line-height: 1.6;">
-                  我們信任班群裡的家長與朋友，但<strong>「對人的信任」不等於「訊息已被查證」</strong>。班群是傳播高速公路，不是查證起點！
-                </p>
-              </div>
-            </div>
+          <div style="margin-top: 24px; background: #1A2938; color: #FFD166; padding: 20px 24px; border-radius: var(--radius-md); border: var(--border-thick); text-align: center; font-size: var(--font-key); font-weight: 900;">
+            💡 偵探金句：急著要你轉發的訊息，最值得你慢慢查！
           </div>
+
         </div>
 
-        <div style="margin-top: 24px; background: #1A2938; color: #FFD166; padding: 20px 24px; border-radius: var(--radius-md); border: var(--border-thick); text-align: center; font-size: var(--font-key); font-weight: 900;">
-          💡 偵探金句：急著要你轉發的訊息，最值得你慢慢查！
-        </div>
       </div>
     </section>
 
@@ -1929,31 +2011,47 @@
        MODAL 1: SIDE-BY-SIDE EVIDENCE COMPARISON MODAL (REVEALS TRUTH)
        ======================================================================== -->
   <div class="modal-overlay" id="comparison-modal">
-    <div class="modal-card" style="max-width: 820px;">
+    <div class="modal-card" style="max-width: 960px;">
       <button class="modal-close-btn" onclick="toggleComparisonModal()">✕</button>
-      <span class="stamp-badge stamp-official">物證 01 號：原始真圖 vs 後製變造圖</span>
+      <span class="stamp-badge stamp-official">物證鑑識：原始真圖 vs 變造假圖 vs 官方澄清</span>
       <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin: 10px 0 16px;">
-        🔍 嘉義市政府圖卡 變造真相公佈
+        🔍 嘉義市政府圖卡 變造真相與時間戳防偽對照
       </h3>
       
-      <div class="grid-2col">
+      <div class="grid-3col">
         <div>
           <div style="background: var(--stamp-green-bg); padding: 8px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 8px;">
-            <strong style="color: #196F3D; font-size: 1.05rem;">✅ 2024/07/26 凱米颱風（原始官方真圖）</strong>
+            <strong style="color: #196F3D; font-size: 1.05rem;">✅ 原始官方真圖 (7/26)</strong>
           </div>
           <img src="477158714_1144428560370864_6678778382469093885_n.jpg" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="原始真圖" onerror="this.src=CASE_IMAGES.real_0726 || ''">
+          <p style="font-size: 0.85rem; color: #196F3D; margin-top: 6px; font-weight: 700;">
+            ✓ 具備完整發布排版與官方水印
+          </p>
         </div>
 
         <div>
           <div style="background: var(--detective-red-bg); padding: 8px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 8px;">
-            <strong style="color: #922B21; font-size: 1.05rem;">❌ 2024/10/01 山陀兒（變造假圖）</strong>
+            <strong style="color: #922B21; font-size: 1.05rem;">❌ 變造假圖 (10/1)</strong>
           </div>
           <img src="山陀兒假訊息.png" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="變造假圖" onerror="this.src=CASE_IMAGES.fake_1001 || ''">
+          <p style="font-size: 0.85rem; color: #922B21; margin-top: 6px; font-weight: 700;">
+            ✗ 日期字體被二次塗改、四周遭裁切
+          </p>
+        </div>
+
+        <div>
+          <div style="background: #EBF5FB; padding: 8px; border: var(--border-thin); border-radius: var(--radius-sm); text-align: center; margin-bottom: 8px;">
+            <strong style="color: #2471A3; font-size: 1.05rem;">📢 市府官方澄清對照卡</strong>
+          </div>
+          <img src="w=1200&h=1200&r=16888.png" style="width: 100%; border: var(--border-thin); border-radius: var(--radius-sm);" alt="市府澄清對照卡" onerror="this.src=CASE_IMAGES.comparison || ''">
+          <p style="font-size: 0.85rem; color: #2471A3; margin-top: 6px; font-weight: 700;">
+            ✓ 市府發布「未發布假訊息」闢謠章
+          </p>
         </div>
       </div>
 
       <div style="margin-top: 18px; background: #FFF9F0; border: var(--border-thick); border-radius: var(--radius-sm); padding: 16px; font-size: 1.15rem; line-height: 1.6;">
-        <strong style="color: var(--detective-red);">破案真相：</strong>造假者擷取 7 月 26 日凱米颱風的舊圖，使用修圖軟體將「7/26(五)」塗改成「10/1(二)」。由於背景、人物與官方模板完全一致，民眾極難單憑肉眼區分，<strong>唯一可靠方法是回到官方人事行政總處確認！</strong>
+        <strong style="color: var(--detective-red);">破案摘要：</strong>造假者擷取 7 月 26 日凱米颱風的舊圖，使用修圖軟體塗改「7/26(五)」為「10/1(二)」。由於背景、人物與官方模板完全一致，民眾極難單憑肉眼區分，<strong>唯一可靠方法是回到官方人事行政總處確認！</strong>
       </div>
     </div>
   </div>
@@ -2439,31 +2537,8 @@
     }
 
     /* ==========================================================================
-       CASE 1: CLUES & INTERACTIVE POLL (MYSTERY SUSPENSE)
+       CASE 1: CLUES & INTERACTIVE POLL (MYSTERY SUSPENSE & TRUTH REVEAL)
        ========================================================================== */
-    const cluesData = {
-      1: {
-        title: "🔍 破綻 1：字體與排版毛邊",
-        desc: "仔細放大「10/1(二)」會發現字體為非官方常規黑體，邊緣有明顯二次塗改壓縮的鋸齒毛邊！"
-      },
-      2: {
-        title: "🔍 破綻 2：背景水滴套版一模一樣",
-        desc: "背景的粉紫雨滴光澤，與先前另一次颱風的官方宣導圖完全一模一樣，實為舊圖換字！"
-      },
-      3: {
-        title: "🔍 破綻 3：缺乏官方發布時間戳記",
-        desc: "官方正式宣導圖右下角皆會附上精確發布年月日時（如 20:00 發布），此圖遭蓄意裁切！"
-      }
-    };
-
-    function showClue(id) {
-      playSound('click');
-      const box = document.getElementById('clue-callout-box');
-      document.getElementById('clue-title').innerText = cluesData[id].title;
-      document.getElementById('clue-desc').innerText = cluesData[id].desc;
-      box.style.display = 'block';
-    }
-
     let pollVotes = { A: 4, B: 9, C: 15, D: 2 };
 
     function castVote(caseId, option) {
@@ -2495,6 +2570,19 @@
         }
       });
       document.getElementById('vote-feedback').style.display = 'block';
+    }
+
+    function revealCaseTruth() {
+      playSound('stamp');
+      launchConfetti();
+      const sec = document.getElementById('case1-truth-section');
+      sec.style.display = 'block';
+      
+      const btn = document.getElementById('reveal-truth-trigger-btn');
+      btn.innerHTML = '✅ 已成功解鎖案件真相與 3 大破綻！';
+      btn.style.background = 'var(--stamp-green)';
+      
+      sec.scrollIntoView({ behavior: 'smooth' });
     }
 
     function flipCard(el) {
