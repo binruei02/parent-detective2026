@@ -822,17 +822,23 @@
       margin-bottom: 12px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 14px;
       box-shadow: var(--shadow-cartoon-sm);
       transition: all 0.15s;
       min-height: 64px;
+      position: relative;
+      overflow: hidden;
     }
     .quiz-choice-btn:hover {
       background: #FFF9F0;
-      transform: translateX(4px);
+      border-color: var(--amber-accent);
+      transform: translateX(3px);
     }
-    .quiz-choice-btn:active {
-      transform: scale(0.98);
+    .quiz-choice-btn.selected {
+      background: #FDF2E9;
+      border-color: var(--amber-accent);
+      box-shadow: 0 0 0 3px var(--amber-accent), var(--shadow-cartoon-sm);
     }
     .quiz-choice-btn.correct {
       background: var(--stamp-green-bg) !important;
@@ -843,6 +849,38 @@
       background: var(--detective-red-bg) !important;
       border-color: var(--detective-red) !important;
       color: #922B21 !important;
+    }
+    .quiz-choice-btn .quiz-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: rgba(230, 126, 34, 0.22);
+      border-right: 3px solid var(--amber-accent);
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1;
+    }
+    .quiz-choice-btn.correct .quiz-bar {
+      background: rgba(39, 174, 96, 0.25);
+      border-right-color: var(--stamp-green);
+    }
+    .quiz-choice-btn .quiz-content-text {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+    .quiz-choice-btn .quiz-percent {
+      position: relative;
+      z-index: 2;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      color: var(--amber-accent);
+      font-size: 1.25rem;
+      white-space: nowrap;
+      margin-left: 8px;
     }
 
     .explanation-box {
@@ -1858,51 +1896,55 @@
     </section>
 
     <!-- --------------------------------------------------------------------
-         CHAPTER 4: 現場 30 秒限時偵探大挑戰（手機大字選項）
+         CHAPTER 4: 現場 30 秒限時偵探大挑戰（講師操控計時 ＆ 全場即時數據）
          -------------------------------------------------------------------- -->
     <section class="case-chapter-section" id="chapter-4">
       <div class="case-folder">
         <div class="folder-tag-tape">⚡ SPEED TRIAL ｜ 限時大挑戰</div>
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
-            <span class="stamp-badge stamp-warning">現場 30 秒限時任務</span>
+            <span class="stamp-badge stamp-warning">全場 30 秒限時任務（講師主控同步）</span>
             <h2 class="chapter-hero-title">測驗你的資訊識讀反應力！</h2>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-weight: 900; font-size: 1.15rem; color: var(--navy-dark);">🎯 得分：</span>
+            <span style="font-weight: 900; font-size: 1.15rem; color: var(--navy-dark);">🎯 我的得分：</span>
             <span id="quiz-score-badge" style="background: var(--amber-accent); color: white; padding: 5px 14px; border-radius: var(--radius-pill); font-weight: 900; font-size: 1.2rem;">0 分</span>
           </div>
         </div>
 
-        <!-- Quiz Container -->
+        <!-- Quiz Container (Questions 1 ~ 4) -->
         <div class="quiz-card" id="quiz-area">
           <div class="quiz-timer-bar-wrap">
-            <div class="quiz-timer-bar" id="quiz-progress-bar"></div>
+            <div class="quiz-timer-bar" id="quiz-progress-bar" style="width: 100%;"></div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <span class="evidence-number" id="quiz-q-num">QUESTION 01 / 04</span>
-            <span style="font-weight: 900; font-size: 1.15rem; color: var(--detective-red);" id="quiz-countdown-num">⏳ 倒數 30 秒</span>
+            <span style="font-weight: 900; font-size: 1.15rem; color: var(--detective-red);" id="quiz-countdown-num">⏸️ 等候講師開始計時</span>
+          </div>
+
+          <!-- Presenter Control Bar -->
+          <div style="background: #FFFDF9; border: var(--border-thin); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div style="font-weight: 800; font-size: 0.95rem; color: var(--navy-dark);" id="quiz-status-hint">
+              💡 講師按下開始後，全場手機將同步啟動 30 秒倒數計時！
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="nav-ctrl-btn presenter-only" id="quiz-start-btn" onclick="startPresenterQuiz()" style="font-size: 0.95rem; padding: 8px 16px; min-height: 40px;">
+                ▶️ 開始 30 秒倒數
+              </button>
+              <button class="nav-ctrl-btn presenter-only" id="quiz-fast-reveal-btn" onclick="revealQuizAnswer(true)" style="font-size: 0.95rem; padding: 8px 16px; min-height: 40px; background: var(--detective-red); display: none;">
+                🔍 提前揭曉答案
+              </button>
+            </div>
           </div>
 
           <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 18px; line-height: 1.45;" id="quiz-question-text">
             【轉傳截圖】「教育部剛宣布：下學期開始，所有學生都必須購買 AI 平板。」你第一個要查的是？
           </h3>
 
-          <!-- 4 Large Tap-Friendly Options -->
+          <!-- 4 Large Tap-Friendly Options with Live Percentages -->
           <div id="quiz-options-container">
-            <button class="quiz-choice-btn" onclick="answerQuiz(0)">
-              <span class="poll-badge-letter">A</span> <span>來源是誰？誰第一個轉發到班群的？</span>
-            </button>
-            <button class="quiz-choice-btn" onclick="answerQuiz(1)">
-              <span class="poll-badge-letter">B</span> <span>發布日期是哪一年、哪一天？</span>
-            </button>
-            <button class="quiz-choice-btn" onclick="answerQuiz(2)">
-              <span class="poll-badge-letter">C</span> <span>教育部官方網站的正式原文公告？</span>
-            </button>
-            <button class="quiz-choice-btn" onclick="answerQuiz(3)">
-              <span class="poll-badge-letter">D</span> <span>網路上有沒有其他人在討論？</span>
-            </button>
+            <!-- Dynamically populated -->
           </div>
 
           <div class="explanation-box" id="quiz-explanation-box">
@@ -1911,8 +1953,50 @@
               <strong id="quiz-exp-title" style="font-size: var(--font-key); color: var(--navy-dark);">偵探解析：</strong>
             </div>
             <p id="quiz-exp-text" style="font-size: 1.15rem; color: #1E293B; line-height: 1.6;"></p>
-            <button class="nav-ctrl-btn" style="margin-top: 14px;" onclick="nextQuizQuestion()" id="quiz-next-btn">
-              下一題挑戰 ➔
+            <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+              <button class="nav-ctrl-btn" onclick="nextQuizQuestion()" id="quiz-next-btn">
+                下一題挑戰 ➔
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grand Completion Scoreboard (Shown after Q4) -->
+        <div class="quiz-card" id="quiz-summary-card" style="display: none; text-align: center; border: 4px solid var(--amber-accent);">
+          <div style="font-size: 3.5rem; margin-bottom: 6px;">🏆</div>
+          <span class="stamp-badge stamp-official" style="font-size: 1.1rem; margin-bottom: 10px;">MISSION ACCOMPLISHED ｜ 全員挑戰達成</span>
+          <h2 style="font-size: var(--font-hero); font-weight: 900; color: var(--navy-dark); margin-bottom: 10px;">
+            🎉 恭喜完成 4 大情境限時大挑戰！
+          </h2>
+          <p style="font-size: 1.15rem; color: #475569; margin-bottom: 20px;">
+            您的最終得分：<strong style="color: var(--detective-red); font-size: 1.5rem;" id="final-quiz-score">100 分</strong> ｜ 榮獲「特級數位小偵探」榮譽認證！
+          </p>
+
+          <div class="grid-2col" style="text-align: left; margin: 20px 0;">
+            <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 12px; padding: 14px;">
+              <strong style="color: var(--navy-dark); font-size: 1.05rem;">✅ 第 01 題・政策截圖：</strong>
+              <p style="font-size: 0.95rem; color: #475569; margin-top: 4px;">直奔教育部官方網站原文，不盲信轉傳圖卡。</p>
+            </div>
+            <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 12px; padding: 14px;">
+              <strong style="color: var(--navy-dark); font-size: 1.05rem;">✅ 第 02 題・緊急繳費：</strong>
+              <p style="font-size: 0.95rem; color: #475569; margin-top: 4px;">透過既有聯絡簿或學校官方電話雙向求證。</p>
+            </div>
+            <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 12px; padding: 14px;">
+              <strong style="color: var(--navy-dark); font-size: 1.05rem;">✅ 第 03 題・AI 作業：</strong>
+              <p style="font-size: 0.95rem; color: #475569; margin-top: 4px;">挑出 3 個數據找來源，請孩子親口說明思考歷程。</p>
+            </div>
+            <div style="background: #F8FAFC; border: var(--border-thin); border-radius: 12px; padding: 14px;">
+              <strong style="color: var(--navy-dark); font-size: 1.05rem;">✅ 第 04 題・短影音：</strong>
+              <p style="font-size: 0.95rem; color: #475569; margin-top: 4px;">警惕斷章取義，尋找完整公開全片與正式聲明。</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+            <button class="nav-ctrl-btn" style="background: var(--stamp-green); font-size: 1.15rem; padding: 14px 28px;" onclick="switchChapter(5)">
+              🎖️ 繼續前往單元 05：AI 邊界與陪練員 ➔
+            </button>
+            <button class="tool-btn" style="font-size: 1.05rem; padding: 12px 20px;" onclick="restartQuizChallenge()">
+              🔄 重新演練 4 大挑戰
             </button>
           </div>
         </div>
@@ -2664,6 +2748,56 @@
         const count = snapshot.numChildren();
         document.getElementById('feedback-count').innerText = `目前共 ${count} 則即時留言`;
       });
+
+      // 4. Live Quiz Session Sync (Presenter controls countdown & question state)
+      firebaseDb.ref('session/quiz').on('value', (snap) => {
+        const qData = snap.val();
+        if (!qData) return;
+        
+        if (currentRole === 'audience') {
+          if (qData.state === 'running' && quizState !== 'running') {
+            currentQuizIndex = qData.qIndex || 0;
+            quizState = 'running';
+            quizTimeLeft = 30;
+            renderQuizQuestion();
+            startQuizTimer();
+            showToast(`⚡ 講師已開始第 0${currentQuizIndex + 1} 題 30 秒限時挑戰！`);
+          } else if (qData.state === 'revealed' && quizState !== 'revealed') {
+            currentQuizIndex = qData.qIndex || 0;
+            revealQuizAnswer(false);
+          } else if (qData.state === 'ready' && (currentQuizIndex !== qData.qIndex || quizState !== 'ready')) {
+            currentQuizIndex = qData.qIndex || 0;
+            quizState = 'ready';
+            renderQuizQuestion();
+          } else if (qData.state === 'completed') {
+            document.getElementById('quiz-area').style.display = 'none';
+            document.getElementById('quiz-summary-card').style.display = 'block';
+            document.getElementById('final-quiz-score').innerText = quizScore + ' 分';
+          }
+        }
+      });
+
+      // 5. Live Quiz Votes Sync (Real-time percentages for all 4 questions)
+      for (let i = 0; i < 4; i++) {
+        firebaseDb.ref(`votes/quiz/${i}`).on('value', (snap) => {
+          const v = snap.val() || { A: 0, B: 0, C: 0, D: 0 };
+          quizVotes[i] = { A: v.A || 0, B: v.B || 0, C: v.C || 0, D: v.D || 0 };
+          if (currentQuizIndex === i) {
+            updateQuizUI();
+          }
+        });
+
+        if (userSessionId) {
+          firebaseDb.ref(`user_votes/quiz/${i}/${userSessionId}`).once('value', (snap) => {
+            const val = snap.val();
+            if (val) {
+              myQuizAnswers[i] = val;
+              localStorage.setItem(`MY_QUIZ_${i}`, val);
+              if (currentQuizIndex === i) updateQuizUI();
+            }
+          });
+        }
+      }
     }
 
     function broadcastSpeakerState() {
@@ -2880,7 +3014,7 @@
       document.getElementById('btn-next-chap').disabled = (index === totalChapters - 1);
 
       if (index === 4) {
-        startQuizTimer();
+        renderQuizQuestion();
       } else {
         clearInterval(quizTimer);
       }
@@ -3237,7 +3371,7 @@
     }
 
     /* ==========================================================================
-       QUIZ CHALLENGE LOGIC
+       QUIZ CHALLENGE LOGIC (PRESENTER CONTROLLED & LIVE PERCENTAGES)
        ========================================================================== */
     const quizQuestions = [
       {
@@ -3249,6 +3383,7 @@
           "網路上有沒有其他人在討論？"
         ],
         ans: 2,
+        ansLetter: 'C',
         title: "正解：C 查教育部官方網站原文！",
         exp: "重大教育政策必定會在教育部官網首頁或正式公文發布。截圖極易被修圖偽造，直奔官方原文是破解假政策的最快途徑！"
       },
@@ -3261,6 +3396,7 @@
           "轉發到別班群組詢問其他班級是否也要繳費"
         ],
         ans: 2,
+        ansLetter: 'C',
         title: "正解：C 透過既有聯絡簿或電話親自確認！",
         exp: "金錢交易與帳號訊息務必遵循『零信任原則』。班群帳號可能遭盜用，必須透過既有可信的雙向管道向校方求證。"
       },
@@ -3273,6 +3409,7 @@
           "誇獎孩子很會使用科技省時間"
         ],
         ans: 1,
+        ansLetter: 'B',
         title: "正解：B 挑出 3 個主張，請孩子找來源並親口說明！",
         exp: "AI 常出現『幻覺（Hallucination）』捏造事實。訓練孩子對 AI 生成內容進行『事實查核』與『口頭重述』，才是最珍貴的資訊思維鍛鍊！"
       },
@@ -3285,10 +3422,38 @@
           "直接打電話到 1999 投訴"
         ],
         ans: 2,
+        ansLetter: 'C',
         title: "正解：C 警惕斷章取義，尋找完整全片與官方聲明！",
         exp: "10 秒短影音去除了前後上下文，甚至可能是 AI 變臉變聲。務必找到『完整全片』還原情境，切勿隨情緒起舞。"
       }
     ];
+
+    let quizState = 'ready'; // 'ready', 'running', 'revealed', 'completed'
+    let quizVotes = {
+      0: { A: 0, B: 0, C: 0, D: 0 },
+      1: { A: 0, B: 0, C: 0, D: 0 },
+      2: { A: 0, B: 0, C: 0, D: 0 },
+      3: { A: 0, B: 0, C: 0, D: 0 }
+    };
+    let myQuizAnswers = {};
+
+    function startPresenterQuiz() {
+      if (currentRole !== 'presenter') return;
+      playSound('click');
+      quizState = 'running';
+      quizTimeLeft = 30;
+      updateQuizProgressBar();
+      startQuizTimer();
+      renderQuizQuestion();
+
+      if (firebaseDb) {
+        firebaseDb.ref('session/quiz').set({
+          qIndex: currentQuizIndex,
+          state: 'running',
+          startedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+    }
 
     function startQuizTimer() {
       clearInterval(quizTimer);
@@ -3300,79 +3465,251 @@
           updateQuizProgressBar();
         } else {
           clearInterval(quizTimer);
-          document.getElementById('quiz-countdown-num').innerText = '⏰ 時間到！';
-          playSound('wrong');
-          revealQuizAnswer(-1);
+          revealQuizAnswer(true);
         }
       }, 1000);
     }
 
     function updateQuizProgressBar() {
       const pct = (quizTimeLeft / 30) * 100;
-      document.getElementById('quiz-progress-bar').style.width = pct + '%';
-      document.getElementById('quiz-countdown-num').innerText = `⏳ 倒數 ${quizTimeLeft} 秒`;
+      const bar = document.getElementById('quiz-progress-bar');
+      const num = document.getElementById('quiz-countdown-num');
+      if (bar) bar.style.width = pct + '%';
+      if (num) {
+        if (quizState === 'ready') num.innerText = '⏸️ 等候講師開始計時';
+        else if (quizState === 'running') num.innerText = `⏳ 倒數 ${quizTimeLeft} 秒`;
+        else if (quizState === 'revealed') num.innerText = '⏰ 作答時間結束（已揭曉答案）';
+      }
     }
 
-    function answerQuiz(chosenIndex) {
+    function castQuizVote(optLetter, optIndex) {
+      if (quizState === 'ready' && currentRole === 'audience') {
+        playSound('click');
+        showToast('⏳ 請等候講師按下開始計時後作答！');
+        return;
+      }
+      if (quizState === 'revealed' || quizState === 'completed') {
+        playSound('click');
+        showToast('⏰ 本題作答時間已結束！');
+        return;
+      }
+
+      const prevLetter = myQuizAnswers[currentQuizIndex];
+      if (prevLetter === optLetter) {
+        playSound('click');
+        showToast(`💡 您已經選擇【選項 ${optLetter}】囉！點選其他選項可隨時更換。`);
+        return;
+      }
+
+      playSound('stamp');
+      myQuizAnswers[currentQuizIndex] = optLetter;
+      localStorage.setItem(`MY_QUIZ_${currentQuizIndex}`, optLetter);
+
+      if (firebaseDb) {
+        firebaseDb.ref(`user_votes/quiz/${currentQuizIndex}/${userSessionId}`).set(optLetter);
+        if (prevLetter) {
+          firebaseDb.ref(`votes/quiz/${currentQuizIndex}/${prevLetter}`).transaction(c => Math.max(0, (c || 1) - 1));
+        }
+        firebaseDb.ref(`votes/quiz/${currentQuizIndex}/${optLetter}`).transaction(c => (c || 0) + 1);
+      } else {
+        if (prevLetter && quizVotes[currentQuizIndex][prevLetter] > 0) {
+          quizVotes[currentQuizIndex][prevLetter]--;
+        }
+        quizVotes[currentQuizIndex][optLetter] = (quizVotes[currentQuizIndex][optLetter] || 0) + 1;
+        updateQuizUI();
+      }
+
+      if (prevLetter) {
+        showToast(`🔄 已將您的選擇更換為【選項 ${optLetter}】！`);
+      } else {
+        showToast(`🗳️ 作答送出！您選擇了【選項 ${optLetter}】。`);
+      }
+    }
+
+    function revealQuizAnswer(isBroadcast = true) {
       clearInterval(quizTimer);
-      revealQuizAnswer(chosenIndex);
-    }
-
-    function revealQuizAnswer(chosenIndex) {
+      quizState = 'revealed';
       const q = quizQuestions[currentQuizIndex];
-      const isCorrect = (chosenIndex === q.ans);
-      
+      const userChoice = myQuizAnswers[currentQuizIndex];
+      const isCorrect = (userChoice === q.ansLetter);
+
       if (isCorrect) {
         quizScore += 25;
-        document.getElementById('quiz-score-badge').innerText = quizScore + ' 分';
+        const badge = document.getElementById('quiz-score-badge');
+        if (badge) badge.innerText = quizScore + ' 分';
         playSound('correct');
         launchConfetti();
       } else {
         playSound('wrong');
       }
 
-      const buttons = document.querySelectorAll('#quiz-options-container .quiz-choice-btn');
-      buttons.forEach((btn, i) => {
-        btn.disabled = true;
-        if (i === q.ans) btn.classList.add('correct');
-        else if (i === chosenIndex) btn.classList.add('wrong');
-      });
+      updateQuizUI();
 
-      const expBox = document.getElementById('quiz-explanation-box');
-      const stamp = document.getElementById('quiz-result-stamp');
-      stamp.className = isCorrect ? 'stamp-badge stamp-official' : 'stamp-badge stamp-fake';
-      stamp.innerText = isCorrect ? '✅ 答對了！' : '❌ 差一點！';
-      
-      document.getElementById('quiz-exp-title').innerText = q.title;
-      document.getElementById('quiz-exp-text').innerText = q.exp;
-      expBox.style.display = 'block';
+      if (currentRole === 'presenter' && isBroadcast && firebaseDb) {
+        firebaseDb.ref('session/quiz').set({
+          qIndex: currentQuizIndex,
+          state: 'revealed',
+          revealedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
     }
 
-    function nextQuizQuestion() {
-      playSound('click');
-      currentQuizIndex++;
-      if (currentQuizIndex >= quizQuestions.length) currentQuizIndex = 0;
-      renderQuizQuestion();
+    function updateQuizUI() {
+      const q = quizQuestions[currentQuizIndex];
+      if (!q) return;
+
+      const votes = quizVotes[currentQuizIndex] || { A: 0, B: 0, C: 0, D: 0 };
+      const total = (votes.A + votes.B + votes.C + votes.D) || 0;
+      const userChoice = myQuizAnswers[currentQuizIndex];
+      const letters = ['A', 'B', 'C', 'D'];
+
+      letters.forEach((letter, i) => {
+        const count = votes[letter] || 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const bar = document.getElementById(`quiz-bar-${letter}`);
+        const pctEl = document.getElementById(`quiz-pct-${letter}`);
+        const btn = document.getElementById(`quiz-btn-${letter}`);
+
+        if (bar) bar.style.width = pct + '%';
+        if (pctEl) pctEl.innerText = `${pct}% (${count}票)`;
+
+        if (btn) {
+          if (letter === userChoice) {
+            btn.classList.add('selected');
+          } else {
+            btn.classList.remove('selected');
+          }
+
+          if (quizState === 'revealed') {
+            btn.disabled = true;
+            if (letter === q.ansLetter) {
+              btn.classList.add('correct');
+            } else if (letter === userChoice) {
+              btn.classList.add('wrong');
+            }
+          } else {
+            btn.disabled = false;
+            btn.classList.remove('correct', 'wrong');
+          }
+        }
+      });
+
+      // Controls visibility
+      const startBtn = document.getElementById('quiz-start-btn');
+      const revealBtn = document.getElementById('quiz-fast-reveal-btn');
+      const hint = document.getElementById('quiz-status-hint');
+      const expBox = document.getElementById('quiz-explanation-box');
+
+      if (quizState === 'ready') {
+        if (startBtn) startBtn.style.display = 'inline-flex';
+        if (revealBtn) revealBtn.style.display = 'none';
+        if (hint) hint.innerText = '💡 講師按下開始後，全場手機將同步啟動 30 秒倒數計時！';
+        if (expBox) expBox.style.display = 'none';
+      } else if (quizState === 'running') {
+        if (startBtn) startBtn.style.display = 'none';
+        if (revealBtn) revealBtn.style.display = 'inline-flex';
+        if (hint) hint.innerText = '⏳ 30 秒作答中！全場手機可點選選項投票（可自由更換）。';
+        if (expBox) expBox.style.display = 'none';
+      } else if (quizState === 'revealed') {
+        if (startBtn) startBtn.style.display = 'none';
+        if (revealBtn) revealBtn.style.display = 'none';
+        if (hint) hint.innerText = '✅ 倒數結束！已公布正確答案與全場統計數據。';
+        if (expBox) {
+          const stamp = document.getElementById('quiz-result-stamp');
+          const isCorrect = (userChoice === q.ansLetter);
+          stamp.className = isCorrect ? 'stamp-badge stamp-official' : 'stamp-badge stamp-fake';
+          stamp.innerText = isCorrect ? '✅ 答對了！' : (userChoice ? '❌ 答錯囉！' : '⏰ 時間到未作答');
+          document.getElementById('quiz-exp-title').innerText = q.title;
+          document.getElementById('quiz-exp-text').innerText = q.exp;
+          
+          const nextBtn = document.getElementById('quiz-next-btn');
+          if (currentQuizIndex === 3) {
+            nextBtn.innerHTML = '🏆 查看全場挑戰總結算 ➔';
+          } else {
+            nextBtn.innerHTML = `下一題挑戰 ➔ (第 0${currentQuizIndex + 2} / 04 題)`;
+          }
+          expBox.style.display = 'block';
+        }
+      }
     }
 
     function renderQuizQuestion() {
       const q = quizQuestions[currentQuizIndex];
+      if (!q) return;
+
       document.getElementById('quiz-q-num').innerText = `QUESTION 0${currentQuizIndex + 1} / 04`;
       document.getElementById('quiz-question-text').innerText = q.q;
       
       const container = document.getElementById('quiz-options-container');
       container.innerHTML = '';
       const letters = ['A', 'B', 'C', 'D'];
+
       q.options.forEach((opt, i) => {
+        const letter = letters[i];
         const btn = document.createElement('button');
         btn.className = 'quiz-choice-btn';
-        btn.onclick = () => answerQuiz(i);
-        btn.innerHTML = `<span class="poll-badge-letter">${letters[i]}</span> <span>${opt}</span>`;
+        btn.id = `quiz-btn-${letter}`;
+        btn.onclick = () => castQuizVote(letter, i);
+        btn.innerHTML = `
+          <div class="quiz-bar" id="quiz-bar-${letter}" style="width: 0%;"></div>
+          <div class="quiz-content-text">
+            <span class="poll-badge-letter">${letter}</span>
+            <span>${opt}</span>
+          </div>
+          <span class="quiz-percent" id="quiz-pct-${letter}">0% (0票)</span>
+        `;
         container.appendChild(btn);
       });
 
-      document.getElementById('quiz-explanation-box').style.display = 'none';
-      startQuizTimer();
+      updateQuizUI();
+      updateQuizProgressBar();
+    }
+
+    function nextQuizQuestion() {
+      playSound('click');
+      if (currentQuizIndex < 3) {
+        currentQuizIndex++;
+        quizState = 'ready';
+        renderQuizQuestion();
+        if (currentRole === 'presenter' && firebaseDb) {
+          firebaseDb.ref('session/quiz').set({
+            qIndex: currentQuizIndex,
+            state: 'ready'
+          });
+        }
+      } else {
+        // Complete Quiz -> Show Grand Scoreboard (DO NOT loop back to Q1)
+        document.getElementById('quiz-area').style.display = 'none';
+        document.getElementById('quiz-summary-card').style.display = 'block';
+        document.getElementById('final-quiz-score').innerText = quizScore + ' 分';
+        playSound('stamp');
+        launchConfetti();
+        if (currentRole === 'presenter' && firebaseDb) {
+          firebaseDb.ref('session/quiz').set({
+            qIndex: 4,
+            state: 'completed'
+          });
+        }
+      }
+    }
+
+    function restartQuizChallenge() {
+      playSound('click');
+      currentQuizIndex = 0;
+      quizScore = 0;
+      quizState = 'ready';
+      myQuizAnswers = {};
+      document.getElementById('quiz-score-badge').innerText = '0 分';
+      document.getElementById('quiz-area').style.display = 'block';
+      document.getElementById('quiz-summary-card').style.display = 'none';
+      renderQuizQuestion();
+
+      if (currentRole === 'presenter' && firebaseDb) {
+        firebaseDb.ref('session/quiz').set({
+          qIndex: 0,
+          state: 'ready'
+        });
+      }
     }
 
     /* ==========================================================================
@@ -3632,6 +3969,7 @@
     // Auto-connect and check URL role on startup
     function startApp(retries = 10) {
       checkUrlRole();
+      renderQuizQuestion();
       if (typeof firebase !== 'undefined') {
         initFirebase();
       } else if (retries > 0) {
