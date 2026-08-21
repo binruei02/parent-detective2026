@@ -282,6 +282,14 @@
       align-items: center;
       gap: 6px;
       letter-spacing: 1px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .timer-badge:hover {
+      background: #243447;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     }
     .timer-badge.warning {
       background: var(--detective-red);
@@ -1347,7 +1355,7 @@
         </div>
 
         <!-- Presentation Timer (Presenter Only) -->
-        <div class="timer-badge presenter-only" id="timer-display" title="宣講倒數計時器">
+        <div class="timer-badge presenter-only" id="timer-display" onclick="openTimerConfigModal()" title="💡 點擊自訂或切換宣講倒數時長">
           ⏱️ <span id="timer-digits">30:00</span>
         </div>
         <button class="tool-btn presenter-only" onclick="toggleTimer()" id="timer-toggle-btn" title="開始/暫停計時">
@@ -2670,6 +2678,67 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       MODAL 5: PRESENTATION TIMER CONFIGURATION MODAL
+       ======================================================================== -->
+  <div class="modal-overlay" id="timer-modal">
+    <div class="modal-card" style="max-width: 480px; text-align: center;">
+      <button class="modal-close-btn" onclick="closeTimerConfigModal()">✕</button>
+      <div style="font-size: 2.6rem; margin-bottom: 6px;">⏱️</div>
+      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">
+        宣講倒數計時設定
+      </h3>
+      <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 16px;">
+        點選常用預設時長，或自訂宣講總時長後開始倒數：
+      </p>
+
+      <!-- Quick Preset Buttons -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;">
+        <button class="tool-btn" style="justify-content: center; font-size: 0.95rem; padding: 10px 4px;" onclick="applyTimerPreset(10, true)">
+          ⚡ 10 分鐘
+        </button>
+        <button class="tool-btn" style="justify-content: center; font-size: 0.95rem; padding: 10px 4px;" onclick="applyTimerPreset(20, true)">
+          ⏱️ 20 分鐘
+        </button>
+        <button class="tool-btn" style="justify-content: center; font-size: 0.95rem; padding: 10px 4px; background: #FEF9E7; border-color: var(--amber-accent); color: var(--amber-accent); font-weight: 900;" onclick="applyTimerPreset(30, true)">
+          ⏰ 30 分鐘 (預設)
+        </button>
+        <button class="tool-btn" style="justify-content: center; font-size: 0.95rem; padding: 10px 4px;" onclick="applyTimerPreset(40, true)">
+          ⏳ 40 分鐘
+        </button>
+        <button class="tool-btn" style="justify-content: center; font-size: 0.95rem; padding: 10px 4px;" onclick="applyTimerPreset(50, true)">
+          🎓 50 分鐘
+        </button>
+        <button class="tool-btn" style="justify-content: center; font-size: 0.95rem; padding: 10px 4px;" onclick="applyTimerPreset(60, true)">
+          ⌛ 60 分鐘
+        </button>
+      </div>
+
+      <!-- Custom Minutes Input -->
+      <div style="background: #F8FAFC; border: var(--border-thin); border-radius: var(--radius-md); padding: 14px; margin-bottom: 18px; text-align: left;">
+        <label style="font-size: 0.95rem; font-weight: 900; color: var(--navy-dark); display: block; margin-bottom: 6px;">
+          ✍️ 自訂分鐘數：
+        </label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="number" id="custom-timer-min" min="1" max="180" value="30" class="custom-input" style="font-size: 1.15rem; font-weight: 900; text-align: center; width: 100px; padding: 8px;" onkeydown="if(event.key==='Enter') startCustomTimer(true);" />
+          <span style="font-weight: 800; color: var(--navy-dark); font-size: 1.05rem;">分鐘</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="nav-ctrl-btn" style="flex: 1; min-width: 140px; background: var(--stamp-green); font-size: 1.05rem; padding: 12px;" onclick="startCustomTimer(true)">
+          ▶️ 設定並立即開始
+        </button>
+        <button class="tool-btn" style="flex: 1; min-width: 120px; justify-content: center; font-size: 1rem; padding: 12px;" onclick="startCustomTimer(false)">
+          💾 僅設定不啟動
+        </button>
+        <button class="tool-btn" style="padding: 12px 18px; font-size: 1rem;" onclick="closeTimerConfigModal()">
+          ✕ 取消
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Include Local Image Assets -->
   <script src="images_data.js"></script>
 
@@ -3332,7 +3401,7 @@
     });
 
     /* ==========================================================================
-       PRESENTER TIMER
+       PRESENTER TIMER (CLICK TO CONFIGURE DURATION & AUTO COUNTDOWN)
        ========================================================================== */
     function formatTime(sec) {
       const m = Math.floor(sec / 60);
@@ -3343,11 +3412,71 @@
     function updateTimerDisplay() {
       const badge = document.getElementById('timer-display');
       const digits = document.getElementById('timer-digits');
-      digits.innerText = formatTime(timerDuration);
-      if (timerDuration <= 180 && timerDuration > 0) {
-        badge.classList.add('warning');
+      if (digits) digits.innerText = formatTime(timerDuration);
+      if (badge) {
+        if (timerDuration <= 180 && timerDuration > 0) {
+          badge.classList.add('warning');
+        } else {
+          badge.classList.remove('warning');
+        }
+      }
+    }
+
+    function openTimerConfigModal() {
+      if (currentRole !== 'presenter') return;
+      playSound('click');
+      const m = document.getElementById('timer-modal');
+      const input = document.getElementById('custom-timer-min');
+      if (input) input.value = Math.max(1, Math.round(timerDuration / 60)) || 30;
+      if (m) m.classList.add('active');
+      setTimeout(() => { if (input) { input.focus(); input.select(); } }, 150);
+    }
+
+    function closeTimerConfigModal() {
+      playSound('click');
+      const m = document.getElementById('timer-modal');
+      if (m) m.classList.remove('active');
+    }
+
+    function applyTimerPreset(mins, autoStart = true) {
+      playSound('click');
+      closeTimerConfigModal();
+      clearInterval(timerInterval);
+      timerDuration = mins * 60;
+      updateTimerDisplay();
+
+      const btn = document.getElementById('timer-toggle-btn');
+      if (autoStart) {
+        timerRunning = true;
+        if (btn) btn.innerHTML = '⏸️ 暫停';
+        timerInterval = setInterval(timerTick, 1000);
+        showToast(`⏱️ 宣講計時已設定為 ${mins} 分鐘，並已開始倒數！`);
       } else {
-        badge.classList.remove('warning');
+        timerRunning = false;
+        if (btn) btn.innerHTML = '▶️ 計時';
+        showToast(`⏱️ 宣講計時已重設為 ${mins} 分鐘。`);
+      }
+    }
+
+    function startCustomTimer(autoStart = true) {
+      const input = document.getElementById('custom-timer-min');
+      let mins = parseInt(input ? input.value : 30, 10);
+      if (isNaN(mins) || mins <= 0) mins = 30;
+      if (mins > 180) mins = 180;
+      applyTimerPreset(mins, autoStart);
+    }
+
+    function timerTick() {
+      if (timerDuration > 0) {
+        timerDuration--;
+        updateTimerDisplay();
+      } else {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        const btn = document.getElementById('timer-toggle-btn');
+        if (btn) btn.innerHTML = '🔄 重設';
+        playSound('stamp');
+        showToast('⏰ 宣講時間到！');
       }
     }
 
@@ -3357,21 +3486,16 @@
       if (timerRunning) {
         clearInterval(timerInterval);
         timerRunning = false;
-        btn.innerHTML = '▶️ 繼續';
+        if (btn) btn.innerHTML = '▶️ 繼續';
+        showToast('⏸️ 宣講計時已暫停');
       } else {
+        if (timerDuration <= 0) {
+          timerDuration = 30 * 60;
+        }
         timerRunning = true;
-        btn.innerHTML = '⏸️ 暫停';
-        timerInterval = setInterval(() => {
-          if (timerDuration > 0) {
-            timerDuration--;
-            updateTimerDisplay();
-          } else {
-            clearInterval(timerInterval);
-            timerRunning = false;
-            btn.innerHTML = '🔄 重設';
-            playSound('stamp');
-          }
-        }, 1000);
+        if (btn) btn.innerHTML = '⏸️ 暫停';
+        timerInterval = setInterval(timerTick, 1000);
+        showToast('▶️ 宣講計時開始！');
       }
     }
 
@@ -3380,7 +3504,8 @@
       clearInterval(timerInterval);
       timerRunning = false;
       timerDuration = (minutes || 30) * 60;
-      document.getElementById('timer-toggle-btn').innerHTML = '▶️ 計時';
+      const btn = document.getElementById('timer-toggle-btn');
+      if (btn) btn.innerHTML = '▶️ 計時';
       updateTimerDisplay();
     }
 
