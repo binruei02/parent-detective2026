@@ -1431,48 +1431,169 @@
       }
     }
 
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+
     @media print {
-      body {
-        background: #FFF !important;
-        padding: 0 !important;
+      html, body {
+        width: 297mm !important;
+        height: 210mm !important;
+        max-width: 297mm !important;
+        max-height: 210mm !important;
         margin: 0 !important;
+        padding: 0 !important;
+        background: #FFFFFF !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
-      /* Hide navigation, toolbars, other chapters and UI buttons */
+
+      /* Hide all UI elements, toolbars, buttons and other chapters */
       header, .toolbar-wrapper, .chapter-nav, .chapter-tabs-container, 
       .presenter-bottom-bar, .audience-live-bar, .tool-actions, .nav-ctrl-btn, 
       .tool-btn, #spotlight-layer, #toast-banner, .modal-backdrop,
       .case-chapter-section:not(#chapter-6), #chapter-6 .folder-tag-tape, 
       #chapter-6 .stamp-badge, #chapter-6 .chapter-hero-title, 
       #chapter-6 .chapter-subtitle, #chapter-6 .grid-2col > div:first-child,
-      #chapter-6 .nav-ctrl-btn, #confetti-canvas {
+      #chapter-6 .nav-ctrl-btn, #confetti-canvas, .crime-tape {
         display: none !important;
       }
+
       #chapter-6 {
         display: block !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        max-width: 297mm !important;
+        max-height: 210mm !important;
         padding: 0 !important;
         margin: 0 !important;
+        background: #FFFFFF !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
       }
+
       #chapter-6 .case-folder {
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
+        margin: 0 !important;
         background: transparent !important;
+        width: 100% !important;
+        height: 100% !important;
       }
+
       #chapter-6 .grid-2col {
         display: block !important;
         margin: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
       }
+
       #certificate-print-zone {
-        display: block !important;
-        max-width: 680px !important;
-        margin: 15px auto !important;
-        padding: 24px 28px !important;
-        border: 4px double #B8860B !important;
-        background: #FFFDF9 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        box-sizing: border-box !important;
+        width: 281mm !important;
+        height: 194mm !important;
+        max-width: 281mm !important;
+        max-height: 194mm !important;
+        margin: 8mm auto !important;
+        padding: 10mm 18mm !important;
+        border: 5px double #B8860B !important;
+        outline: 2px solid #D4AF37 !important;
+        outline-offset: -8px !important;
+        background-color: #FFFEFA !important;
+        background-image: 
+          radial-gradient(circle at 12% 15%, rgba(212, 175, 55, 0.08) 0%, transparent 35%),
+          radial-gradient(circle at 88% 85%, rgba(26, 41, 56, 0.04) 0%, transparent 35%) !important;
+        border-radius: 12px !important;
         box-shadow: none !important;
-        page-break-inside: avoid;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        position: relative !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      #certificate-print-zone .cert-header {
+        margin-bottom: 2px !important;
+      }
+
+      #certificate-print-zone .cert-header img {
+        height: 56px !important;
+        width: auto !important;
+        margin-bottom: 2px !important;
+      }
+
+      #certificate-print-zone .cert-title {
+        font-size: 1.95rem !important;
+        font-weight: 900 !important;
+        color: #B8860B !important;
+        letter-spacing: 2.5px !important;
+        margin-bottom: 2px !important;
+      }
+
+      #certificate-print-zone .cert-subtitle {
+        font-size: 1rem !important;
+        color: #78716C !important;
+        font-weight: 700 !important;
+        margin-bottom: 6px !important;
+      }
+
+      #certificate-print-zone .cert-content-box {
+        font-size: 1.25rem !important;
+        line-height: 1.6 !important;
+        margin: 6px 0 !important;
+        padding: 12px 20px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 1.5px dashed #D4AF37 !important;
+        border-radius: 10px !important;
+      }
+
+      #preview-pledges-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px 24px !important;
+        margin-top: 8px !important;
+        padding-left: 20px !important;
+        font-size: 1.08rem !important;
+        line-height: 1.5 !important;
+        text-align: left !important;
+      }
+
+      #certificate-print-zone .cert-footer {
+        margin-top: 8px !important;
+        font-size: 1.05rem !important;
+      }
+
+      #certificate-print-zone .cert-issuer {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+      }
+
+      #certificate-print-zone .cert-date {
+        font-size: 1.02rem !important;
+        color: #64748B !important;
+      }
+
+      #certificate-print-zone .cert-seal {
+        position: absolute !important;
+        bottom: 10mm !important;
+        right: 16mm !important;
+        width: 86px !important;
+        height: 86px !important;
+        border: 3px dashed #C0392B !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #C0392B !important;
+        transform: rotate(-12deg) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
     }
   </style>
@@ -2458,13 +2579,13 @@
           <!-- Right: Interactive Certificate Canvas / Card -->
           <div>
             <div class="cert-preview-card" id="certificate-print-zone">
-              <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;">
+              <div class="cert-header" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;">
                 <img src="校徽去背.png" alt="民族國小校徽" style="height: 64px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.12));" onerror="this.src=CASE_IMAGES.school_logo || ''">
               </div>
-              <h2 style="font-size: 1.55rem; font-weight: 900; color: #B8860B; letter-spacing: 1.2px; margin-bottom: 4px;">民族數位資訊小偵探・家庭約定書</h2>
-              <p style="font-size: 0.88rem; color: #78716C; margin-bottom: 14px; font-weight: 700;">2026 學年度 班親會數位素養榮譽認證</p>
+              <h2 class="cert-title" style="font-size: 1.55rem; font-weight: 900; color: #B8860B; letter-spacing: 1.2px; margin-bottom: 4px;">民族數位資訊小偵探・家庭約定書</h2>
+              <p class="cert-subtitle" style="font-size: 0.88rem; color: #78716C; margin-bottom: 14px; font-weight: 700;">2026 學年度 班親會數位素養榮譽認證</p>
               
-              <div style="font-size: 1.1rem; font-weight: 700; color: var(--navy-dark); line-height: 1.7; margin: 14px 0; text-align: left; background: rgba(255,255,255,0.88); padding: 14px 16px; border-radius: 12px; border: 1.5px dashed #D4AF37; box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);">
+              <div class="cert-content-box" style="font-size: 1.1rem; font-weight: 700; color: var(--navy-dark); line-height: 1.7; margin: 14px 0; text-align: left; background: rgba(255,255,255,0.88); padding: 14px 16px; border-radius: 12px; border: 1.5px dashed #D4AF37; box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);">
                 茲證明小偵探 <strong style="color: var(--navy-dark); font-size: 1.3rem;" id="preview-student">林小明</strong> 與 家長 <strong style="color: var(--navy-dark); font-size: 1.2rem;" id="preview-parent">王家長</strong>，共同承諾落實：
                 <ul id="preview-pledges-list" style="margin-top: 8px; padding-left: 22px; font-size: 1rem; color: #334155; line-height: 1.6;">
                   <li>情緒越急，越先停下來。</li>
@@ -2474,10 +2595,10 @@
                 </ul>
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; font-size: 0.92rem; color: #555; text-align: left; font-weight: 700;">
+              <div class="cert-footer" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; font-size: 0.92rem; color: #555; text-align: left; font-weight: 700;">
                 <div>
-                  <div>發證單位：民族國小・數位識讀特搜事務所</div>
-                  <div>簽署日期：<span id="cert-date-text">2026/08/21</span></div>
+                  <div class="cert-issuer">發證單位：民族國小・數位識讀特搜事務所</div>
+                  <div class="cert-date">簽署日期：<span id="cert-date-text">2026/08/21</span></div>
                 </div>
               </div>
 
