@@ -1,5 +1,5 @@
 /**
- * 資訊識讀偵探事務所 - Firebase 設定檔
+ * 數位識讀偵探事務所 - Firebase 設定檔
  * 專案代碼：parent-detective-2026
  * 即時資料庫地區：asia-southeast1 (新加坡)
  */
