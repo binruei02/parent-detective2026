@@ -2372,7 +2372,7 @@
       <div class="case-folder">
         <div class="folder-tag-tape">📜 FAMILY PLEDGE ｜ 數位家庭約定</div>
         <span class="stamp-badge stamp-official">班親會共識：把話說成全家共同的約定</span>
-        <h2 class="chapter-hero-title">「數位資訊小偵探」家庭榮譽承諾卡</h2>
+        <h2 class="chapter-hero-title">「民族數位資訊小偵探」家庭榮譽承諾卡</h2>
         <p class="chapter-subtitle">不只是禁止，而是全家一起簽署遵守的 4 大守則！</p>
 
         <div class="grid-2col" style="margin-top: 18px;">
@@ -2426,13 +2426,15 @@
           <!-- Right: Interactive Certificate Canvas / Card -->
           <div>
             <div class="cert-preview-card" id="certificate-print-zone">
-              <div style="font-size: 2.4rem; margin-bottom: 2px;">🏆</div>
-              <h2 style="font-size: 1.5rem; font-weight: 900; color: #B8860B; letter-spacing: 1px;">數位資訊小偵探・家庭約定書</h2>
-              <p style="font-size: 0.85rem; color: #888; margin-bottom: 14px;">2026 學年度 班親會資訊素養榮譽認證</p>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;">
+                <img src="校徽去背.png" alt="民族國小校徽" style="height: 64px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.12));" onerror="this.src=CASE_IMAGES.school_logo || ''">
+              </div>
+              <h2 style="font-size: 1.55rem; font-weight: 900; color: #B8860B; letter-spacing: 1.2px; margin-bottom: 4px;">民族數位資訊小偵探・家庭約定書</h2>
+              <p style="font-size: 0.88rem; color: #78716C; margin-bottom: 14px; font-weight: 700;">2026 學年度 班親會資訊素養榮譽認證</p>
               
-              <div style="font-size: 1.1rem; font-weight: 700; color: var(--navy-dark); line-height: 1.7; margin: 14px 0; text-align: left; background: rgba(255,255,255,0.85); padding: 14px; border-radius: 10px; border: 1px dashed #D4AF37;">
+              <div style="font-size: 1.1rem; font-weight: 700; color: var(--navy-dark); line-height: 1.7; margin: 14px 0; text-align: left; background: rgba(255,255,255,0.88); padding: 14px 16px; border-radius: 12px; border: 1.5px dashed #D4AF37; box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);">
                 茲證明小偵探 <strong style="color: var(--detective-red); font-size: 1.3rem;" id="preview-student">林小明</strong> 與 家長 <strong style="color: var(--navy-dark); font-size: 1.2rem;" id="preview-parent">王家長</strong>，共同承諾落實：
-                <ul id="preview-pledges-list" style="margin-top: 8px; padding-left: 22px; font-size: 1rem; color: #334155;">
+                <ul id="preview-pledges-list" style="margin-top: 8px; padding-left: 22px; font-size: 1rem; color: #334155; line-height: 1.6;">
                   <li>情緒越急，越先停下來。</li>
                   <li>資訊越驚人，越找原始來源。</li>
                   <li>AI 越方便，越保留獨立思考。</li>
@@ -2440,16 +2442,16 @@
                 </ul>
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; font-size: 0.9rem; color: #555; text-align: left;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; font-size: 0.92rem; color: #555; text-align: left; font-weight: 700;">
                 <div>
-                  <div>發證單位：資訊識讀特搜事務所</div>
+                  <div>發證單位：民族國小・資訊識讀特搜事務所</div>
                   <div>簽署日期：<span id="cert-date-text">2026/08/21</span></div>
                 </div>
               </div>
 
               <div class="cert-seal">
-                <span>★ 榮譽特搜 ★</span>
-                <span style="font-size: 1.1rem;">已認證</span>
+                <span>★ 民族特搜 ★</span>
+                <span style="font-size: 1.05rem;">已認證</span>
                 <span>VERIFIED</span>
               </div>
             </div>
@@ -2908,6 +2910,7 @@
     // Fallback Image Data
     if (typeof CASE_IMAGES === 'undefined') {
       window.CASE_IMAGES = {
+        school_logo: '校徽去背.png',
         fake_1001: '山陀兒假訊息.png',
         real_0726: '477158714_1144428560370864_6678778382469093885_n.jpg',
         stamp_fake: 'medias-20241001-66fbcfbf7af3b.jpeg',
