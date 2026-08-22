@@ -537,6 +537,134 @@
       border-radius: 6px;
     }
 
+    /* Chapter 2 Compact & Optimized 6 Cards Layout */
+    #chapter-2 .case-folder {
+      padding: clamp(12px, 1.8vw, 18px) clamp(14px, 2.2vw, 22px) 14px;
+    }
+    #chapter-2 .stamp-badge {
+      font-size: 0.82rem;
+      padding: 3px 10px;
+      margin-bottom: 2px;
+      border-width: 2px;
+    }
+    #chapter-2 .chapter-hero-title {
+      font-size: clamp(1.3rem, 2.2vw, 1.65rem);
+      margin: 3px 0 2px;
+      line-height: 1.25;
+    }
+    #chapter-2 .chapter-subtitle {
+      font-size: clamp(0.85rem, 1.2vw, 0.96rem);
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+    #chapter-2 .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px 12px;
+      margin-top: 8px !important;
+    }
+    #chapter-2 .evidence-card {
+      padding: 10px 12px 10px;
+      border-radius: 12px;
+      border-width: 2.5px;
+      box-shadow: var(--shadow-cartoon-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: unset;
+    }
+    #chapter-2 .evidence-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-cartoon);
+    }
+    #chapter-2 .evidence-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1.5px dashed #CBD5E1;
+    }
+    #chapter-2 .evidence-number {
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    #chapter-2 .evidence-type-tag {
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+    #chapter-2 .evidence-card h3 {
+      font-size: clamp(0.96rem, 1.25vw, 1.06rem) !important;
+      font-weight: 900;
+      color: var(--navy-dark);
+      margin-bottom: 4px !important;
+      line-height: 1.28;
+    }
+    #chapter-2 .evidence-card p {
+      font-size: 0.83rem !important;
+      color: #475569;
+      line-height: 1.38 !important;
+      margin-bottom: 6px !important;
+      flex-grow: 1;
+    }
+    #chapter-2 .ch2-investigate {
+      background: #FFF9F0;
+      border-left: 3.5px solid var(--amber-accent);
+      padding: 5px 8px !important;
+      font-size: 0.79rem !important;
+      line-height: 1.32 !important;
+      margin-bottom: 6px !important;
+      border-radius: 4px;
+      color: var(--text-main);
+    }
+    #chapter-2 .evidence-card .tool-btn {
+      min-height: 28px !important;
+      padding: 4px 8px !important;
+      font-size: 0.78rem !important;
+      font-weight: 800;
+      border-radius: 6px;
+      text-decoration: none;
+      width: 100%;
+      justify-content: center;
+      box-shadow: 1px 1px 0px var(--border-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #chapter-2 .ch2-next-btn-wrap {
+      margin-top: 10px !important;
+      text-align: center;
+    }
+    #chapter-2 .ch2-next-btn-wrap .nav-ctrl-btn {
+      padding: 7px 18px !important;
+      font-size: 0.92rem !important;
+      min-height: 36px;
+    }
+
+    @media (max-width: 1024px) {
+      #chapter-2 .grid-3col {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+    }
+    @media (max-width: 640px) {
+      #chapter-2 .grid-3col {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      #chapter-2 .evidence-card {
+        padding: 12px 14px;
+      }
+      #chapter-2 .evidence-card h3 {
+        font-size: 1.05rem !important;
+      }
+      #chapter-2 .evidence-card p {
+        font-size: 0.88rem !important;
+      }
+    }
+
     /* Image Inspection Container (Mobile First) */
     .inspection-viewer {
       position: relative;
@@ -1791,119 +1919,119 @@
         <h2 class="chapter-hero-title">識破 6 種日常最常見的變形陷阱</h2>
         <p class="chapter-subtitle">提供權威查核中心真實案件連結，講師點擊即可開啟現場實境示範！</p>
 
-        <div class="grid-3col" style="margin-top: 16px;">
+        <div class="grid-3col">
           
           <!-- 01 假標題 -->
-          <div class="evidence-card" style="border-top: 6px solid var(--detective-red);">
+          <div class="evidence-card" style="border-top: 5px solid var(--detective-red);">
             <div class="evidence-card-header">
               <span class="evidence-number">01</span>
-              <span style="font-size: 1.3rem;">🏷️ 假標題</span>
+              <span class="evidence-type-tag">🏷️ 假標題</span>
             </div>
-            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">內容誇大、標題殺人</h3>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+            <h3>內容誇大、標題殺人</h3>
+            <p>
               內文明明是普通日常提醒，標題卻寫成「驚爆！吃這個等於吞毒、全台已有數萬人受害」吸引點擊。
             </p>
-            <div style="background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.95rem; margin-bottom: 12px;">
+            <div class="ch2-investigate">
               <strong>🔎 偵探追查：</strong>「是哪個權威研究說的？內文跟標題有對得上嗎？」
             </div>
-            <a href="https://www.mygopen.com/search?q=%E6%A8%99%E9%A1%8C%E6%AE%BA%E4%BA%BA" target="_blank" rel="noopener noreferrer" class="tool-btn" style="width: 100%; justify-content: center; background: #FDEDEC; border-color: var(--detective-red); color: var(--detective-red); font-size: 0.92rem; text-decoration: none;">
+            <a href="https://www.mygopen.com/search?q=%E6%A8%99%E9%A1%8C%E6%AE%BA%E4%BA%BA" target="_blank" rel="noopener noreferrer" class="tool-btn" style="background: #FDEDEC; border-color: var(--detective-red); color: var(--detective-red);">
               🔗 查核示範：MyGoPen 標題誇大與不實查核報告 ↗
             </a>
           </div>
 
           <!-- 02 舊聞新傳 -->
-          <div class="evidence-card" style="border-top: 6px solid var(--amber-accent);">
+          <div class="evidence-card" style="border-top: 5px solid var(--amber-accent);">
             <div class="evidence-card-header">
               <span class="evidence-number">02</span>
-              <span style="font-size: 1.3rem;">⏳ 舊聞新傳</span>
+              <span class="evidence-type-tag">⏳ 舊聞新傳</span>
             </div>
-            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">拿 3 年前的天災當今天</h3>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+            <h3>拿 3 年前的天災當今天</h3>
+            <p>
               拿過去水災、地震或舊停班停課的影片與圖卡，在今天的颱風天重新包裝成「剛剛最新災情」引發恐慌。
             </p>
-            <div style="background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.95rem; margin-bottom: 12px;">
+            <div class="ch2-investigate">
               <strong>🔎 偵探追查：</strong>「事件發生的確切年份與時間？以圖搜圖找原始來源！」
             </div>
-            <a href="https://www.mygopen.com/search?q=%E8%88%8A%E8%81%9E%E9%87%8D%E7%99%BC" target="_blank" rel="noopener noreferrer" class="tool-btn" style="width: 100%; justify-content: center; background: #FEF9E7; border-color: var(--amber-accent); color: #B7950B; font-size: 0.92rem; text-decoration: none;">
+            <a href="https://www.mygopen.com/search?q=%E8%88%8A%E8%81%9E%E9%87%8D%E7%99%BC" target="_blank" rel="noopener noreferrer" class="tool-btn" style="background: #FEF9E7; border-color: var(--amber-accent); color: #B7950B;">
               🔗 查核示範：MyGoPen 舊聞移花接木天災闢謠 ↗
             </a>
           </div>
 
           <!-- 03 斷章取義 -->
-          <div class="evidence-card" style="border-top: 6px solid #8E44AD;">
+          <div class="evidence-card" style="border-top: 5px solid #8E44AD;">
             <div class="evidence-card-header">
               <span class="evidence-number">03</span>
-              <span style="font-size: 1.3rem;">✂️ 斷章取義</span>
+              <span class="evidence-type-tag">✂️ 斷章取義</span>
             </div>
-            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">去頭去尾，只剪激動一句話</h3>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+            <h3>去頭去尾，只剪激動一句話</h3>
+            <p>
               把老師或專家長達 30 分鐘的完整座談，故意只剪取其中 8 秒最激烈的字眼做成短影音，刻意激化情緒。
             </p>
-            <div style="background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.95rem; margin-bottom: 12px;">
+            <div class="ch2-investigate">
               <strong>🔎 偵探追查：</strong>「整段談話的前後完整脈絡是什麼？有沒有完整公開錄影？」
             </div>
-            <a href="https://www.mygopen.com/search?q=%E6%96%B7%E7%AB%A0%E5%8F%96%E7%BE%A9" target="_blank" rel="noopener noreferrer" class="tool-btn" style="width: 100%; justify-content: center; background: #F4ECF7; border-color: #8E44AD; color: #8E44AD; font-size: 0.92rem; text-decoration: none;">
+            <a href="https://www.mygopen.com/search?q=%E6%96%B7%E7%AB%A0%E5%8F%96%E7%BE%A9" target="_blank" rel="noopener noreferrer" class="tool-btn" style="background: #F4ECF7; border-color: #8E44AD; color: #8E44AD;">
               🔗 查核示範：MyGoPen 斷章取義短影音闢謠報告 ↗
             </a>
           </div>
 
           <!-- 04 假帳號冒名 -->
-          <div class="evidence-card" style="border-top: 6px solid #2980B9;">
+          <div class="evidence-card" style="border-top: 5px solid #2980B9;">
             <div class="evidence-card-header">
               <span class="evidence-number">04</span>
-              <span style="font-size: 1.3rem;">🎭 假帳號冒名</span>
+              <span class="evidence-type-tag">🎭 假帳號冒名</span>
             </div>
-            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">山寨粉專、名人群組詐騙</h3>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+            <h3>山寨粉專、名人群組詐騙</h3>
+            <p>
               冒用知名作家、名人或學校師長名義創立粉專，宣稱「免費送書、公益演講」，實則誘騙加入 LINE 詐騙群。
             </p>
-            <div style="background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.95rem; margin-bottom: 12px;">
+            <div class="ch2-investigate">
               <strong>🔎 偵探追查：</strong>「粉專是否有官方認證？成立時間是否只有幾天？」
             </div>
-            <a href="https://www.mygopen.com/search?q=%E5%81%87%E5%86%92%E5%90%8D%E4%BA%BA" target="_blank" rel="noopener noreferrer" class="tool-btn" style="width: 100%; justify-content: center; background: #EBF5FB; border-color: #2980B9; color: #2980B9; font-size: 0.92rem; text-decoration: none;">
+            <a href="https://www.mygopen.com/search?q=%E5%81%87%E5%86%92%E5%90%8D%E4%BA%BA" target="_blank" rel="noopener noreferrer" class="tool-btn" style="background: #EBF5FB; border-color: #2980B9; color: #2980B9;">
               🔗 查核示範：MyGoPen 假冒名人粉專詐騙專題 ↗
             </a>
           </div>
 
           <!-- 05 修圖與 AI 圖像 -->
-          <div class="evidence-card" style="border-top: 6px solid #D35400;">
+          <div class="evidence-card" style="border-top: 5px solid #D35400;">
             <div class="evidence-card-header">
               <span class="evidence-number">05</span>
-              <span style="font-size: 1.3rem;">🎨 修圖與 AI 圖</span>
+              <span class="evidence-type-tag">🎨 修圖與 AI 圖</span>
             </div>
-            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">換字、換臉、AI 生圖造謠</h3>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+            <h3>換字、換臉、AI 生圖造謠</h3>
+            <p>
               如案件一之停課舊圖改字，或以 Midjourney 生成不存在的天災假照片，畫面逼真但充滿局部破綻。
             </p>
-            <div style="background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.95rem; margin-bottom: 12px;">
+            <div class="ch2-investigate">
               <strong>🔎 偵探追查：</strong>「手部手指、光影反光、文字邊緣是否有非自然合成雜訊？」
             </div>
-            <a href="https://www.mygopen.com/search?q=AI%E7%94%9F%E6%88%90" target="_blank" rel="noopener noreferrer" class="tool-btn" style="width: 100%; justify-content: center; background: #FBEEE6; border-color: #D35400; color: #D35400; font-size: 0.92rem; text-decoration: none;">
+            <a href="https://www.mygopen.com/search?q=AI%E7%94%9F%E6%88%90" target="_blank" rel="noopener noreferrer" class="tool-btn" style="background: #FBEEE6; border-color: #D35400; color: #D35400;">
               🔗 查核示範：MyGoPen AI 生成圖與修圖辨識專題 ↗
             </a>
           </div>
 
           <!-- 06 AI 聲音／深偽 -->
-          <div class="evidence-card" style="border-top: 6px solid var(--stamp-green);">
+          <div class="evidence-card" style="border-top: 5px solid var(--stamp-green);">
             <div class="evidence-card-header">
               <span class="evidence-number">06</span>
-              <span style="font-size: 1.3rem;">🎙️ AI 深偽語音</span>
+              <span class="evidence-type-tag">🎙️ AI 深偽語音</span>
             </div>
-            <h3 style="font-size: var(--font-key); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">模擬親友聲音緊急求救借錢</h3>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+            <h3>模擬親友聲音緊急求救借錢</h3>
+            <p>
               僅需 3 秒社群語音即可複製孩子聲音，致電家長謊稱「出車禍急需醫藥費」實施恐嚇勒索。
             </p>
-            <div style="background: #FFF9F0; border-left: 4px solid var(--amber-accent); padding: 8px 12px; font-size: 0.95rem; margin-bottom: 12px;">
+            <div class="ch2-investigate">
               <strong>🔎 偵探追查：</strong>「立刻掛斷！使用平日約定之『家庭安全通關密語』反向查證！」
             </div>
-            <a href="https://www.mygopen.com/search?q=AI%E8%81%B2%E9%9F%B3%E8%A9%90%E9%A8%99" target="_blank" rel="noopener noreferrer" class="tool-btn" style="width: 100%; justify-content: center; background: #E8F8F5; border-color: var(--stamp-green); color: var(--stamp-green); font-size: 0.92rem; text-decoration: none;">
+            <a href="https://www.mygopen.com/search?q=AI%E8%81%B2%E9%9F%B3%E8%A9%90%E9%A8%99" target="_blank" rel="noopener noreferrer" class="tool-btn" style="background: #E8F8F5; border-color: var(--stamp-green); color: var(--stamp-green);">
               🔗 查核示範：MyGoPen AI 複製聲音詐騙防範專題 ↗
             </a>
           </div>
 
         </div>
 
-        <div style="margin-top: 24px; text-align: center;">
+        <div class="ch2-next-btn-wrap">
           <button class="nav-ctrl-btn" style="margin: 0 auto;" onclick="switchChapter(3)">
             掌握解法：學習「停、查、找、追」四字口訣 ➔
           </button>
