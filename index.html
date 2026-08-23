@@ -1140,16 +1140,40 @@
       box-shadow: var(--shadow-cartoon);
     }
 
-    /* Certificate Preview */
+    /* Certificate Preview & Proportional Scaler */
+    .cert-preview-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cert-scaler-container {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+      background: #FFFDF7;
+      aspect-ratio: 880 / 622;
+    }
     .cert-preview-card {
+      width: 880px;
+      height: 622px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+      box-sizing: border-box;
       background: #FFFDF7;
       border: 5px double #B8860B;
       outline: 2px solid #D4AF37;
       outline-offset: -6px;
-      border-radius: 18px;
-      padding: clamp(18px, 3.5vw, 28px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-      position: relative;
+      border-radius: 16px;
+      padding: 20px 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: none;
       background-image: 
         radial-gradient(circle at 10% 12%, rgba(212, 175, 55, 0.09) 0%, transparent 32%),
         radial-gradient(circle at 90% 88%, rgba(26, 41, 56, 0.05) 0%, transparent 32%);
@@ -1159,18 +1183,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 10px;
+      gap: 14px;
+      margin-bottom: 4px;
     }
     .cert-school-logo {
-      height: 62px;
+      height: 56px;
       width: auto;
       object-fit: contain;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
     }
     .cert-mascot-img {
-      height: 72px;
-      width: 72px;
+      height: 64px;
+      width: 64px;
       border-radius: 50%;
       object-fit: cover;
       border: 2.5px solid #D4AF37;
@@ -1184,46 +1208,46 @@
     }
     .cert-top-badge {
       display: inline-block;
-      font-size: 0.88rem;
+      font-size: 13px;
       font-weight: 900;
       color: #92400E;
       background: #FEF3C7;
       border: 1px solid #F59E0B;
       border-radius: var(--radius-pill);
-      padding: 3px 12px;
+      padding: 3px 14px;
       margin-bottom: 4px;
       letter-spacing: 0.5px;
     }
     .cert-title {
-      font-size: clamp(1.55rem, 3.2vw, 2.1rem);
+      font-size: 27px;
       font-weight: 900;
       color: #B8860B;
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-      line-height: 1.28;
+      letter-spacing: 2.5px;
+      margin-bottom: 3px;
+      line-height: 1.25;
     }
     .cert-subtitle {
-      font-size: clamp(0.95rem, 2vw, 1.12rem);
+      font-size: 13.5px;
       color: #57534E;
       font-weight: 800;
-      letter-spacing: 0.8px;
-      margin-bottom: 4px;
+      letter-spacing: 0.6px;
+      margin-bottom: 2px;
     }
     .cert-declaration {
-      font-size: clamp(1.15rem, 2.3vw, 1.35rem);
+      font-size: 16.5px;
       font-weight: 700;
       color: var(--navy-dark);
-      line-height: 1.75;
-      margin: 12px 0 10px 0;
+      line-height: 1.65;
+      margin: 6px 0;
       text-align: left;
       background: rgba(255,255,255,0.92);
-      padding: 12px 18px;
-      border-radius: 12px;
+      padding: 10px 16px;
+      border-radius: 11px;
       border: 1.5px dashed #D4AF37;
     }
     .cert-highlight-student {
       color: var(--navy-dark);
-      font-size: 1.48rem;
+      font-size: 20px;
       font-weight: 900;
       text-decoration: underline;
       text-decoration-color: #D4AF37;
@@ -1231,59 +1255,64 @@
     }
     .cert-highlight-parent {
       color: var(--navy-dark);
-      font-size: 1.38rem;
+      font-size: 18.5px;
       font-weight: 900;
     }
     .cert-pledges-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px 14px;
-      margin: 10px 0 14px 0;
+      gap: 8px 12px;
+      margin: 6px 0;
       padding: 0;
       list-style: none;
       text-align: left;
     }
     .cert-pledge-card {
-      background: rgba(255,255,255,0.95);
+      background: #FFFFFF;
       border: 1.5px solid #E2E8F0;
       border-left: 5px solid #D4AF37;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 1.05rem;
-      line-height: 1.55;
-      color: #334155;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      border-radius: 9px;
+      padding: 9px 13px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .cert-pledge-card strong {
+    .cert-pledge-title {
       color: var(--navy-dark);
-      font-size: 1.15rem;
+      font-size: 15px;
+      font-weight: 900;
       display: block;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
+    }
+    .cert-pledge-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+      font-weight: 600;
     }
     .cert-footer {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 14px;
-      font-size: 0.95rem;
-      color: #555;
+      margin-top: 6px;
       text-align: left;
-      font-weight: 700;
       position: relative;
     }
     .cert-issuer {
-      font-size: 1.08rem;
+      font-size: 15px;
       color: #334155;
       font-weight: 900;
     }
     .cert-date {
-      font-size: 1rem;
+      font-size: 13.5px;
       color: #64748B;
       margin-top: 3px;
+      font-weight: 700;
     }
     .cert-seal {
-      width: 88px;
-      height: 88px;
+      width: 80px;
+      height: 80px;
       border: 3px dashed #C0392B;
       border-radius: 50%;
       display: flex;
@@ -1293,10 +1322,20 @@
       color: #C0392B;
       font-weight: 900;
       transform: rotate(-12deg);
-      font-size: 0.8rem;
+      font-size: 11px;
       background: rgba(255,255,255,0.95);
       box-shadow: 0 3px 8px rgba(192, 57, 43, 0.18);
       flex-shrink: 0;
+    }
+    .cert-preview-tip {
+      font-size: 0.9rem;
+      color: #64748B;
+      text-align: center;
+      background: #F1F5F9;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
+      margin-top: 6px;
     }
 
     /* Reference Hub */
@@ -1586,7 +1625,8 @@
       .case-chapter-section:not(#chapter-6), #chapter-6 .folder-tag-tape, 
       #chapter-6 .stamp-badge, #chapter-6 .chapter-hero-title, 
       #chapter-6 .chapter-subtitle, #chapter-6 .grid-2col > div:first-child,
-      #chapter-6 .nav-ctrl-btn, #confetti-canvas, .crime-tape {
+      #chapter-6 .nav-ctrl-btn, #confetti-canvas, .crime-tape,
+      .cert-preview-tip, .cert-preview-wrapper > div:last-child {
         display: none !important;
       }
 
@@ -1621,27 +1661,49 @@
         height: 100% !important;
       }
 
+      .cert-preview-wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .cert-scaler-container {
+        width: 100% !important;
+        height: 100% !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        position: static !important;
+        aspect-ratio: auto !important;
+      }
+
       #certificate-print-zone {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
         box-sizing: border-box !important;
-        width: 283mm !important;
-        height: 196mm !important;
-        max-width: 283mm !important;
-        max-height: 196mm !important;
-        margin: 7mm auto !important;
-        padding: 10mm 16mm !important;
+        width: 281mm !important;
+        height: 195mm !important;
+        max-width: 281mm !important;
+        max-height: 195mm !important;
+        margin: 7.5mm auto !important;
+        padding: 8mm 14mm !important;
         border: 6px double #B8860B !important;
         outline: 2px solid #D4AF37 !important;
-        outline-offset: -8px !important;
+        outline-offset: -7px !important;
         background-color: #FFFEFA !important;
         background-image: 
           radial-gradient(circle at 10% 12%, rgba(212, 175, 55, 0.09) 0%, transparent 32%),
           radial-gradient(circle at 90% 88%, rgba(26, 41, 56, 0.05) 0%, transparent 32%) !important;
         border-radius: 14px !important;
         box-shadow: none !important;
-        position: relative !important;
         page-break-inside: avoid !important;
         page-break-after: avoid !important;
         -webkit-print-color-adjust: exact !important;
@@ -1656,13 +1718,13 @@
       }
 
       #certificate-print-zone .cert-school-logo {
-        height: 64px !important;
+        height: 60px !important;
         width: auto !important;
       }
 
       #certificate-print-zone .cert-mascot-img {
-        height: 76px !important;
-        width: 76px !important;
+        height: 72px !important;
+        width: 72px !important;
         border-radius: 50% !important;
         border: 2.5px solid #D4AF37 !important;
         background: #FFF !important;
@@ -1671,94 +1733,121 @@
       }
 
       #certificate-print-zone .cert-top-badge {
-        font-size: 0.95rem !important;
-        padding: 3px 14px !important;
-        margin-bottom: 2px !important;
+        font-size: 10.5pt !important;
+        padding: 2.5px 15px !important;
+        margin-bottom: 2mm !important;
+        background: #FEF3C7 !important;
+        border: 1px solid #F59E0B !important;
+        color: #92400E !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       #certificate-print-zone .cert-title {
-        font-size: 2.35rem !important;
+        font-size: 26pt !important;
         font-weight: 900 !important;
         color: #B8860B !important;
         letter-spacing: 3px !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 2mm !important;
+        line-height: 1.25 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       #certificate-print-zone .cert-subtitle {
-        font-size: 1.12rem !important;
+        font-size: 12pt !important;
         color: #44403C !important;
         font-weight: 800 !important;
-        margin-bottom: 3px !important;
+        letter-spacing: 0.8px !important;
+        margin-bottom: 2mm !important;
       }
 
       #certificate-print-zone .cert-declaration {
-        font-size: 1.32rem !important;
+        font-size: 14pt !important;
         line-height: 1.7 !important;
-        margin: 3mm 0 !important;
-        padding: 10px 20px !important;
+        margin: 2.5mm 0 !important;
+        padding: 3.5mm 6mm !important;
         background: rgba(255, 255, 255, 0.95) !important;
         border: 1.5px dashed #D4AF37 !important;
         border-radius: 10px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       #certificate-print-zone .cert-highlight-student {
-        font-size: 1.6rem !important;
+        font-size: 17.5pt !important;
+        font-weight: 900 !important;
+        color: #1A2938 !important;
       }
 
       #certificate-print-zone .cert-highlight-parent {
-        font-size: 1.5rem !important;
+        font-size: 16pt !important;
+        font-weight: 900 !important;
+        color: #1A2938 !important;
       }
 
       #preview-pledges-list {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 3.5mm 6mm !important;
-        margin: 3mm 0 !important;
+        gap: 3mm 6mm !important;
+        margin: 2.5mm 0 !important;
         padding: 0 !important;
         list-style: none !important;
       }
 
       .cert-pledge-card {
-        background: rgba(255,255,255,0.95) !important;
-        border: 1.5px solid #E2E8F0 !important;
-        border-left: 5px solid #D4AF37 !important;
-        border-radius: 10px !important;
-        padding: 10px 14px !important;
-        font-size: 1.12rem !important;
-        line-height: 1.5 !important;
+        background: #FFFFFF !important;
+        border: 1.5px solid #CBD5E1 !important;
+        border-left: 5.5px solid #D4AF37 !important;
+        border-radius: 8px !important;
+        padding: 3mm 5mm !important;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
-      .cert-pledge-card strong {
-        font-size: 1.22rem !important;
+      .cert-pledge-title {
+        font-size: 13pt !important;
         color: #1A2938 !important;
-        margin-bottom: 3px !important;
+        display: block !important;
+        margin-bottom: 1.5mm !important;
+        font-weight: 900 !important;
+      }
+
+      .cert-pledge-desc {
+        font-size: 11.5pt !important;
+        color: #334155 !important;
+        line-height: 1.45 !important;
+        font-weight: 600 !important;
       }
 
       #certificate-print-zone .cert-footer {
         display: flex !important;
         justify-content: space-between !important;
         align-items: flex-end !important;
-        margin-top: 3mm !important;
+        margin-top: 2.5mm !important;
       }
 
       #certificate-print-zone .cert-issuer {
-        font-size: 1.15rem !important;
+        font-size: 13.5pt !important;
         font-weight: 900 !important;
         color: #1E293B !important;
       }
 
       #certificate-print-zone .cert-date {
-        font-size: 1.05rem !important;
+        font-size: 12pt !important;
         color: #475569 !important;
+        font-weight: 700 !important;
       }
 
       #certificate-print-zone .cert-seal {
-        width: 88px !important;
-        height: 88px !important;
+        width: 86px !important;
+        height: 86px !important;
         border: 3px dashed #C0392B !important;
         border-radius: 50% !important;
         background: rgba(255, 255, 255, 0.95) !important;
         color: #C0392B !important;
+        font-size: 11.5pt !important;
         transform: rotate(-12deg) !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -2745,44 +2834,65 @@
           </div>
 
           <!-- Right: Interactive Certificate Canvas / Card -->
-          <div>
-            <div class="cert-preview-card" id="certificate-print-zone">
-              <div class="cert-header">
-                <img src="校徽去背.png" alt="民族國小校徽" class="cert-school-logo" onerror="this.src=CASE_IMAGES.school_logo || ''">
-                <div class="cert-title-group">
-                  <span class="cert-top-badge">★ 2026 學年度 班親會數位素養與科技倫理榮譽認證 ★</span>
-                  <h2 class="cert-title">民族數位資訊小偵探・家庭約定書</h2>
-                  <p class="cert-subtitle">FAMILY DIGITAL CITIZENSHIP PLEDGE ｜ 家校攜手・共築數位免疫力</p>
+          <div class="cert-preview-wrapper">
+            <div class="cert-scaler-container" id="cert-scaler-container">
+              <div class="cert-preview-card" id="certificate-print-zone">
+                <div class="cert-header">
+                  <img src="校徽去背.png" alt="民族國小校徽" class="cert-school-logo" onerror="this.src=CASE_IMAGES.school_logo || ''">
+                  <div class="cert-title-group">
+                    <span class="cert-top-badge">★ 2026 學年度 班親會數位素養與科技倫理榮譽認證 ★</span>
+                    <h2 class="cert-title">民族數位資訊小偵探・家庭約定書</h2>
+                    <p class="cert-subtitle">FAMILY DIGITAL CITIZENSHIP PLEDGE ｜ 家校攜手・共築數位免疫力</p>
+                  </div>
+                  <img src="detective_mascot.jpg" alt="小偵探吉祥物" class="cert-mascot-img" onerror="this.src=CASE_IMAGES.detective_mascot || ''">
                 </div>
-                <img src="detective_mascot.jpg" alt="小偵探吉祥物" class="cert-mascot-img" onerror="this.src=CASE_IMAGES.detective_mascot || ''">
-              </div>
-              
-              <div class="cert-declaration">
-                茲證明 <strong>民族國小</strong> 小偵探 <strong class="cert-highlight-student" id="preview-student">江品萱</strong> 同學 與 家長 <strong class="cert-highlight-parent" id="preview-parent">江秉叡</strong>，共同完成班親會數位識讀培訓，特立此約定書，承諾在家庭數位生活中實踐以下守則：
-              </div>
-
-              <div class="cert-pledges-container">
-                <ul id="preview-pledges-list" class="cert-pledges-grid">
-                  <!-- Dynamically populated from JS -->
-                </ul>
-              </div>
-
-              <div class="cert-footer">
-                <div class="cert-footer-left">
-                  <div class="cert-issuer">🏛️ 發證單位：民族國小・數位識讀特搜事務所</div>
-                  <div class="cert-date">📅 簽署日期：<span id="cert-date-text">2026/08/21</span></div>
+                
+                <div class="cert-declaration">
+                  茲證明 <strong>民族國小</strong> 小偵探 <strong class="cert-highlight-student" id="preview-student">江品萱</strong> 同學 與 家長 <strong class="cert-highlight-parent" id="preview-parent">江秉叡</strong>，共同完成班親會數位識讀培訓，特立此約定書，承諾在家庭數位生活中實踐以下守則：
                 </div>
-                <div class="cert-seal">
-                  <span>★ 民族特搜 ★</span>
-                  <span style="font-size: 1.05rem;">已認證</span>
-                  <span>VERIFIED</span>
+
+                <div class="cert-pledges-container">
+                  <ul id="preview-pledges-list" class="cert-pledges-grid">
+                    <li class="cert-pledge-card">
+                      <strong class="cert-pledge-title">🛡️ 01. 遇急先停步：</strong>
+                      <span class="cert-pledge-desc">遇到聳動或停課急訊，先冷靜深呼吸，絕不盲目轉發。</span>
+                    </li>
+                    <li class="cert-pledge-card">
+                      <strong class="cert-pledge-title">🔎 02. 驚人求原委：</strong>
+                      <span class="cert-pledge-desc">凡事主動查證官方權威來源，仔細比對發布時間戳記。</span>
+                    </li>
+                    <li class="cert-pledge-card">
+                      <strong class="cert-pledge-title">🧠 03. AI 助不代：</strong>
+                      <span class="cert-pledge-desc">把 AI 當思考教練與助手，堅持自主動腦與事實查核。</span>
+                    </li>
+                    <li class="cert-pledge-card">
+                      <strong class="cert-pledge-title">🤝 04. 困境同商量：</strong>
+                      <span class="cert-pledge-desc">遇到網路風險或詐騙疑慮，親子共同理性討論共學。</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="cert-footer">
+                  <div class="cert-footer-left">
+                    <div class="cert-issuer">🏛️ 發證單位：民族國小・數位識讀特搜事務所</div>
+                    <div class="cert-date">📅 簽署日期：<span id="cert-date-text">2026/08/21</span></div>
+                  </div>
+                  <div class="cert-seal">
+                    <span>★ 民族特搜 ★</span>
+                    <span style="font-size: 1.05rem;">已認證</span>
+                    <span>VERIFIED</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 12px;">
-              <button class="tool-btn" onclick="window.print()" style="flex: 1; justify-content: center; font-size: 1.05rem;">
-                🖨️ 列印 / 另存 PDF
+            <div class="cert-preview-tip">
+              💡 預覽卡片已依畫面等比例縮小呈現；點選下方按鈕可<b>滿版列印 / 另存 A4 橫式 PDF 證書</b>！
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button class="tool-btn" onclick="window.print()" style="flex: 1; justify-content: center; font-size: 1.05rem; background: var(--amber-accent); color: white; border-color: var(--amber-accent);">
+                🖨️ 列印 / 另存 A4 榮譽約定書 (滿版)
               </button>
             </div>
           </div>
@@ -3833,6 +3943,9 @@
           }
         }
         renderQuizQuestion();
+      } else if (index === 6) {
+        updateCertPreview();
+        requestAnimationFrame(scaleCertPreview);
       } else {
         clearInterval(quizTimer);
       }
@@ -4834,12 +4947,18 @@
        CERTIFICATE GENERATOR
        ========================================================================== */
     function updateCertPreview() {
-      const sName = document.getElementById('cert-student-name').value || '江品萱';
-      const pName = document.getElementById('cert-parent-name').value || '江秉叡';
-      document.getElementById('preview-student').innerText = sName;
-      document.getElementById('preview-parent').innerText = pName;
+      const sNameInput = document.getElementById('cert-student-name');
+      const pNameInput = document.getElementById('cert-parent-name');
+      const sName = (sNameInput && sNameInput.value.trim()) || '江品萱';
+      const pName = (pNameInput && pNameInput.value.trim()) || '江秉叡';
+
+      const sEl = document.getElementById('preview-student');
+      const pEl = document.getElementById('preview-parent');
+      if (sEl) sEl.innerText = sName;
+      if (pEl) pEl.innerText = pName;
 
       const list = document.getElementById('preview-pledges-list');
+      if (!list) return;
       list.innerHTML = '';
 
       const pledges = [
@@ -4850,13 +4969,36 @@
       ];
 
       pledges.forEach(p => {
-        if (document.getElementById(p.id).checked) {
+        const chk = document.getElementById(p.id);
+        if (!chk || chk.checked) {
           const li = document.createElement('li');
           li.className = 'cert-pledge-card';
-          li.innerHTML = `<strong>${p.icon} ${p.title}</strong><span>${p.text}</span>`;
+          li.innerHTML = `<strong class="cert-pledge-title">${p.icon} ${p.title}</strong><span class="cert-pledge-desc">${p.text}</span>`;
           list.appendChild(li);
         }
       });
+      scaleCertPreview();
+    }
+
+    function scaleCertPreview() {
+      const container = document.getElementById('cert-scaler-container');
+      const cert = document.getElementById('certificate-print-zone');
+      if (!container || !cert) return;
+      const containerWidth = container.clientWidth;
+      if (containerWidth === 0) return;
+      const baseWidth = 880;
+      const baseHeight = 622;
+      const scale = containerWidth / baseWidth;
+      cert.style.transform = `scale(${scale})`;
+      container.style.height = `${baseHeight * scale}px`;
+    }
+
+    function setupCertScalerObserver() {
+      const container = document.getElementById('cert-scaler-container');
+      if (container && window.ResizeObserver) {
+        new ResizeObserver(() => scaleCertPreview()).observe(container);
+      }
+      window.addEventListener('resize', scaleCertPreview);
     }
 
     function generateCertSuccess() {
@@ -5004,6 +5146,10 @@
     function startApp(retries = 10) {
       checkUrlRole();
       renderQuizQuestion();
+      setupCertScalerObserver();
+      updateCertPreview();
+      scaleCertPreview();
+      setTimeout(scaleCertPreview, 100);
       if (typeof firebase !== 'undefined') {
         initFirebase();
       } else if (retries > 0) {
