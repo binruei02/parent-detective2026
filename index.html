@@ -1214,20 +1214,20 @@
       background: #FEF3C7;
       border: 1px solid #F59E0B;
       border-radius: var(--radius-pill);
-      padding: 3px 14px;
+      padding: 3px 15px;
       margin-bottom: 4px;
       letter-spacing: 0.5px;
     }
     .cert-title {
-      font-size: 27px;
+      font-size: 33px;
       font-weight: 900;
       color: #B8860B;
-      letter-spacing: 2.5px;
+      letter-spacing: 2px;
       margin-bottom: 3px;
-      line-height: 1.25;
+      line-height: 1.2;
     }
     .cert-subtitle {
-      font-size: 13.5px;
+      font-size: 15.5px;
       color: #57534E;
       font-weight: 800;
       letter-spacing: 0.6px;
@@ -1237,17 +1237,17 @@
       font-size: 16.5px;
       font-weight: 700;
       color: var(--navy-dark);
-      line-height: 1.65;
+      line-height: 1.6;
       margin: 6px 0;
       text-align: left;
       background: rgba(255,255,255,0.92);
-      padding: 10px 16px;
+      padding: 9px 16px;
       border-radius: 11px;
       border: 1.5px dashed #D4AF37;
     }
     .cert-highlight-student {
       color: var(--navy-dark);
-      font-size: 20px;
+      font-size: 21px;
       font-weight: 900;
       text-decoration: underline;
       text-decoration-color: #D4AF37;
@@ -1255,7 +1255,7 @@
     }
     .cert-highlight-parent {
       color: var(--navy-dark);
-      font-size: 18.5px;
+      font-size: 19.5px;
       font-weight: 900;
     }
     .cert-pledges-grid {
@@ -1272,7 +1272,7 @@
       border: 1.5px solid #E2E8F0;
       border-left: 5px solid #D4AF37;
       border-radius: 9px;
-      padding: 9px 13px;
+      padding: 8px 13px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.03);
       display: flex;
       flex-direction: column;
@@ -1280,13 +1280,13 @@
     }
     .cert-pledge-title {
       color: var(--navy-dark);
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 900;
       display: block;
       margin-bottom: 2px;
     }
     .cert-pledge-desc {
-      font-size: 13px;
+      font-size: 14.5px;
       color: #475569;
       line-height: 1.4;
       font-weight: 600;
@@ -1300,20 +1300,20 @@
       position: relative;
     }
     .cert-issuer {
-      font-size: 15px;
+      font-size: 15.5px;
       color: #334155;
       font-weight: 900;
     }
     .cert-date {
-      font-size: 13.5px;
+      font-size: 14px;
       color: #64748B;
       margin-top: 3px;
       font-weight: 700;
     }
     .cert-seal {
-      width: 80px;
-      height: 80px;
-      border: 3px dashed #C0392B;
+      width: 90px;
+      height: 90px;
+      border: 2.5px dashed #C0392B;
       border-radius: 50%;
       display: flex;
       flex-direction: column;
@@ -1322,10 +1322,38 @@
       color: #C0392B;
       font-weight: 900;
       transform: rotate(-12deg);
-      font-size: 11px;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.96);
       box-shadow: 0 3px 8px rgba(192, 57, 43, 0.18);
       flex-shrink: 0;
+      box-sizing: border-box;
+      padding: 4px;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .cert-seal-top {
+      font-size: 10.5px;
+      letter-spacing: 0.5px;
+      font-weight: 900;
+      white-space: nowrap;
+      display: block;
+      line-height: 1.15;
+    }
+    .cert-seal-mid {
+      font-size: 17px;
+      letter-spacing: 1.5px;
+      font-weight: 900;
+      line-height: 1.15;
+      margin: 1px 0;
+      white-space: nowrap;
+      display: block;
+    }
+    .cert-seal-bot {
+      font-size: 8px;
+      letter-spacing: 1.2px;
+      font-weight: 800;
+      opacity: 0.88;
+      white-space: nowrap;
+      display: block;
     }
     .cert-preview-tip {
       font-size: 0.9rem;
@@ -1714,7 +1742,7 @@
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin-bottom: 2mm !important;
+        margin-bottom: 1.5mm !important;
       }
 
       #certificate-print-zone .cert-school-logo {
@@ -1733,9 +1761,9 @@
       }
 
       #certificate-print-zone .cert-top-badge {
-        font-size: 10.5pt !important;
-        padding: 2.5px 15px !important;
-        margin-bottom: 2mm !important;
+        font-size: 11pt !important;
+        padding: 2.5px 16px !important;
+        margin-bottom: 1.5mm !important;
         background: #FEF3C7 !important;
         border: 1px solid #F59E0B !important;
         color: #92400E !important;
@@ -1744,29 +1772,29 @@
       }
 
       #certificate-print-zone .cert-title {
-        font-size: 26pt !important;
+        font-size: 31pt !important;
         font-weight: 900 !important;
         color: #B8860B !important;
-        letter-spacing: 3px !important;
-        margin-bottom: 2mm !important;
-        line-height: 1.25 !important;
+        letter-spacing: 2.5px !important;
+        margin-bottom: 1.5mm !important;
+        line-height: 1.2 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
       #certificate-print-zone .cert-subtitle {
-        font-size: 12pt !important;
+        font-size: 14.5pt !important;
         color: #44403C !important;
         font-weight: 800 !important;
-        letter-spacing: 0.8px !important;
-        margin-bottom: 2mm !important;
+        letter-spacing: 0.6px !important;
+        margin-bottom: 1.5mm !important;
       }
 
       #certificate-print-zone .cert-declaration {
         font-size: 14pt !important;
-        line-height: 1.7 !important;
-        margin: 2.5mm 0 !important;
-        padding: 3.5mm 6mm !important;
+        line-height: 1.65 !important;
+        margin: 2mm 0 !important;
+        padding: 3mm 5mm !important;
         background: rgba(255, 255, 255, 0.95) !important;
         border: 1.5px dashed #D4AF37 !important;
         border-radius: 10px !important;
@@ -1775,13 +1803,13 @@
       }
 
       #certificate-print-zone .cert-highlight-student {
-        font-size: 17.5pt !important;
+        font-size: 18pt !important;
         font-weight: 900 !important;
         color: #1A2938 !important;
       }
 
       #certificate-print-zone .cert-highlight-parent {
-        font-size: 16pt !important;
+        font-size: 16.5pt !important;
         font-weight: 900 !important;
         color: #1A2938 !important;
       }
@@ -1789,8 +1817,8 @@
       #preview-pledges-list {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 3mm 6mm !important;
-        margin: 2.5mm 0 !important;
+        gap: 2.5mm 5mm !important;
+        margin: 2mm 0 !important;
         padding: 0 !important;
         list-style: none !important;
       }
@@ -1800,24 +1828,24 @@
         border: 1.5px solid #CBD5E1 !important;
         border-left: 5.5px solid #D4AF37 !important;
         border-radius: 8px !important;
-        padding: 3mm 5mm !important;
+        padding: 2.8mm 4.5mm !important;
         box-shadow: none !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
       .cert-pledge-title {
-        font-size: 13pt !important;
+        font-size: 16pt !important;
         color: #1A2938 !important;
         display: block !important;
-        margin-bottom: 1.5mm !important;
+        margin-bottom: 1.2mm !important;
         font-weight: 900 !important;
       }
 
       .cert-pledge-desc {
-        font-size: 11.5pt !important;
+        font-size: 13.5pt !important;
         color: #334155 !important;
-        line-height: 1.45 !important;
+        line-height: 1.4 !important;
         font-weight: 600 !important;
       }
 
@@ -1825,32 +1853,65 @@
         display: flex !important;
         justify-content: space-between !important;
         align-items: flex-end !important;
-        margin-top: 2.5mm !important;
+        margin-top: 2mm !important;
       }
 
       #certificate-print-zone .cert-issuer {
-        font-size: 13.5pt !important;
+        font-size: 14pt !important;
         font-weight: 900 !important;
         color: #1E293B !important;
       }
 
       #certificate-print-zone .cert-date {
-        font-size: 12pt !important;
+        font-size: 12.5pt !important;
         color: #475569 !important;
         font-weight: 700 !important;
       }
 
       #certificate-print-zone .cert-seal {
-        width: 86px !important;
-        height: 86px !important;
+        width: 96px !important;
+        height: 96px !important;
         border: 3px dashed #C0392B !important;
         border-radius: 50% !important;
-        background: rgba(255, 255, 255, 0.95) !important;
+        background: rgba(255, 255, 255, 0.96) !important;
         color: #C0392B !important;
-        font-size: 11.5pt !important;
         transform: rotate(-12deg) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        padding: 4px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+      }
+      #certificate-print-zone .cert-seal-top {
+        font-size: 9pt !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
+        display: block !important;
+        line-height: 1.15 !important;
+      }
+      #certificate-print-zone .cert-seal-mid {
+        font-size: 16pt !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.5px !important;
+        line-height: 1.15 !important;
+        margin: 1.5px 0 !important;
+        white-space: nowrap !important;
+        display: block !important;
+      }
+      #certificate-print-zone .cert-seal-bot {
+        font-size: 7.5pt !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.5px !important;
+        white-space: nowrap !important;
+        display: block !important;
+        line-height: 1 !important;
+        opacity: 0.9 !important;
       }
     }
   </style>
@@ -2878,9 +2939,9 @@
                     <div class="cert-date">📅 簽署日期：<span id="cert-date-text">2026/08/21</span></div>
                   </div>
                   <div class="cert-seal">
-                    <span>★ 民族特搜 ★</span>
-                    <span style="font-size: 1.05rem;">已認證</span>
-                    <span>VERIFIED</span>
+                    <span class="cert-seal-top">★ 民族特搜 ★</span>
+                    <span class="cert-seal-mid">已認證</span>
+                    <span class="cert-seal-bot">VERIFIED</span>
                   </div>
                 </div>
               </div>
