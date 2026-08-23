@@ -839,6 +839,13 @@
       color: #FFFFFF;
       transform: rotateY(180deg);
     }
+    .flip-card-back p {
+      text-align: left;
+      text-indent: 2em;
+      line-height: 1.65;
+      margin: 0;
+      width: 100%;
+    }
     .flip-card-icon {
       font-size: 2.6rem;
       margin-bottom: 6px;
@@ -2342,8 +2349,8 @@
                   <span class="flip-hint">點擊翻牌看破譯 ➔</span>
                 </div>
                 <div class="flip-card-back">
-                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">時間急迫陷阱</h4>
-                  <p style="font-size: 1rem; line-height: 1.6;">
+                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 10px; text-align: center;">時間急迫陷阱</h4>
+                  <p style="font-size: 1rem; line-height: 1.65; text-align: left; text-indent: 2em; width: 100%;">
                     晚上 9:30 大家正忙著安排隔天工作與接送孩子；<strong>越著急，越容易把「很像官方」直接當成「來自官方」！</strong>
                   </p>
                 </div>
@@ -2359,8 +2366,8 @@
                   <span class="flip-hint">點擊翻牌看破譯 ➔</span>
                 </div>
                 <div class="flip-card-back">
-                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">FOMO 焦慮效應</h4>
-                  <p style="font-size: 1rem; line-height: 1.6;">
+                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 10px; text-align: center;">FOMO 焦慮效應</h4>
+                  <p style="font-size: 1rem; line-height: 1.65; text-align: left; text-indent: 2em; width: 100%;">
                     深怕漏接任何停課資訊影響孩子，這種出於關愛與責任的焦慮，被造假者精準利用為轉發動力。
                   </p>
                 </div>
@@ -2376,8 +2383,8 @@
                   <span class="flip-hint">點擊翻牌看破譯 ➔</span>
                 </div>
                 <div class="flip-card-back">
-                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 8px;">信任轉移盲點</h4>
-                  <p style="font-size: 1rem; line-height: 1.6;">
+                  <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFEAA7; margin-bottom: 10px; text-align: center;">信任轉移盲點</h4>
+                  <p style="font-size: 1rem; line-height: 1.65; text-align: left; text-indent: 2em; width: 100%;">
                     我們信任班群裡的家長與朋友，但<strong>「對人的信任」不等於「訊息已被查證」</strong>。班群是傳播高速公路，不是查證起點！
                   </p>
                 </div>
@@ -3251,7 +3258,7 @@
        ======================================================================== -->
   <div class="modal-overlay" id="firebase-modal">
     <div class="modal-card">
-      <button class="modal-close-btn" onclick="openFirebaseConfigModal()">✕</button>
+      <button class="modal-close-btn" onclick="closeFirebaseConfigModal()">✕</button>
       <div style="font-size: 2.2rem; margin-bottom: 6px;">⚙️</div>
       <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 8px;">
         Firebase 雲端萬人同步設定
@@ -3292,15 +3299,15 @@
     <div class="modal-card" style="max-width: 440px; text-align: center;">
       <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
       <div style="font-size: 2.5rem; margin-bottom: 6px;">🔐</div>
-      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;">
+      <h3 style="font-size: var(--font-section); font-weight: 900; color: var(--navy-dark); margin-bottom: 6px;" id="auth-modal-title">
         講者主控授權驗證
       </h3>
-      <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 18px; line-height: 1.5;">
+      <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 18px; line-height: 1.5;" id="auth-modal-desc">
         為確保現場秩序，避免聽眾誤觸影響全場簡報同步，切換至<strong>「講者主控模式」</strong>需輸入授權密碼：
       </p>
       
       <div style="margin-bottom: 18px;">
-        <input type="password" id="auth-pwd-input" class="custom-input" placeholder="請輸入講者授權密碼" autocomplete="off" style="font-size: 1.15rem; text-align: center; font-weight: 800; letter-spacing: 2px;" onkeydown="if(event.key==='Enter') submitPresenterAuth();" />
+        <input type="password" id="auth-pwd-input" class="custom-input" placeholder="請輸入授權密碼 (eteacher)" autocomplete="off" style="font-size: 1.15rem; text-align: center; font-weight: 800; letter-spacing: 2px;" onkeydown="if(event.key==='Enter') submitPresenterAuth();" />
         <div id="auth-pwd-error" style="color: var(--detective-red); font-size: 0.9rem; font-weight: 800; margin-top: 6px; display: none;">
           ❌ 授權密碼錯誤，請重新輸入！
         </div>
@@ -3492,14 +3499,30 @@
         setRole('audience');
       } else {
         // From Audience -> Presenter: Must verify password eteacher
-        openAuthModal();
+        openAuthModal('presenter-mode');
       }
     }
 
-    function openAuthModal() {
+    let currentAuthPurpose = 'presenter-mode';
+
+    function openAuthModal(purpose = 'presenter-mode') {
+      currentAuthPurpose = purpose;
       const modal = document.getElementById('auth-pwd-modal');
       const input = document.getElementById('auth-pwd-input');
       const err = document.getElementById('auth-pwd-error');
+      const title = document.getElementById('auth-modal-title');
+      const desc = document.getElementById('auth-modal-desc');
+
+      if (title && desc) {
+        if (purpose === 'cloud-config') {
+          title.innerText = '⚙️ 雲端設定管理驗證';
+          desc.innerHTML = '此區域涉及 Firebase 雲端金鑰與場次數據重置，請輸入管理密碼 (<code>eteacher</code>) 以解鎖：';
+        } else {
+          title.innerText = '講者主控授權驗證';
+          desc.innerHTML = '為確保現場秩序，避免聽眾誤觸影響全場簡報同步，切換至<strong>「講者主控模式」</strong>需輸入授權密碼：';
+        }
+      }
+
       if (err) err.style.display = 'none';
       if (input) input.value = '';
       if (modal) modal.classList.add('active');
@@ -3521,10 +3544,17 @@
         playSound('correct');
         launchConfetti();
         localStorage.setItem('PRESENTER_AUTH_PASSED', 'true');
+        sessionStorage.setItem('CLOUD_CONFIG_AUTH', 'true');
         closeAuthModal();
-        setRole('presenter');
-        showToast('👑 授權成功！已切換至【講者主控模式】。');
-        if (firebaseDb) broadcastSpeakerState();
+
+        if (currentAuthPurpose === 'cloud-config') {
+          showToast('🔓 密碼正確！已解鎖雲端設定。');
+          showFirebaseConfigModalDirectly();
+        } else {
+          setRole('presenter');
+          showToast('👑 授權成功！已切換至【講者主控模式】。');
+          if (firebaseDb) broadcastSpeakerState();
+        }
       } else {
         playSound('wrong');
         if (err) err.style.display = 'block';
@@ -3870,11 +3900,27 @@
     }
 
     function openFirebaseConfigModal() {
+      const isAuthed = sessionStorage.getItem('CLOUD_CONFIG_AUTH') === 'true' || localStorage.getItem('PRESENTER_AUTH_PASSED') === 'true';
+      if (!isAuthed) {
+        openAuthModal('cloud-config');
+        return;
+      }
+      showFirebaseConfigModalDirectly();
+    }
+
+    function showFirebaseConfigModalDirectly() {
       playSound('click');
       const m = document.getElementById('firebase-modal');
-      m.classList.toggle('active');
+      if (m) m.classList.add('active');
       const saved = localStorage.getItem('FIREBASE_CONFIG_SAVED') || JSON.stringify(FIREBASE_CONFIG, null, 2);
-      document.getElementById('firebase-config-input').value = saved;
+      const input = document.getElementById('firebase-config-input');
+      if (input) input.value = saved;
+    }
+
+    function closeFirebaseConfigModal() {
+      playSound('click');
+      const m = document.getElementById('firebase-modal');
+      if (m) m.classList.remove('active');
     }
 
     /* ==========================================================================
