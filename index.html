@@ -1183,23 +1183,25 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 16px;
       margin-bottom: 4px;
     }
     .cert-school-logo {
-      height: 56px;
+      height: 76px;
+      max-width: 120px;
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.15));
+      flex-shrink: 0;
     }
     .cert-mascot-img {
-      height: 64px;
-      width: 64px;
+      height: 80px;
+      width: 80px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2.5px solid #D4AF37;
+      border: 3px solid #D4AF37;
       background: #FFF;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
       flex-shrink: 0;
     }
     .cert-title-group {
@@ -1646,16 +1648,24 @@
         print-color-adjust: exact !important;
       }
 
-      /* Hide all UI elements, toolbars, buttons and other chapters */
-      header, .toolbar-wrapper, .chapter-nav, .chapter-tabs-container, 
-      .presenter-bottom-bar, .audience-live-bar, .tool-actions, .nav-ctrl-btn, 
-      .tool-btn, #spotlight-layer, #toast-banner, .modal-backdrop,
+      /* Hide all UI elements, toolbars, presenter/audience bottom bars and other chapters */
+      header, footer, .presenter-bottom-bar, .audience-live-bar,
+      body.mode-presenter .presenter-bottom-bar,
+      body.mode-audience .audience-live-bar,
+      body .presenter-bottom-bar,
+      body .audience-live-bar,
+      .presenter-only, .audience-only,
+      .toolbar-wrapper, .chapter-nav, .chapter-tabs-container, 
+      .tool-actions, .nav-ctrl-btn, .tool-btn, #spotlight-layer, #toast-banner, .modal-backdrop,
       .case-chapter-section:not(#chapter-6), #chapter-6 .folder-tag-tape, 
       #chapter-6 .stamp-badge, #chapter-6 .chapter-hero-title, 
       #chapter-6 .chapter-subtitle, #chapter-6 .grid-2col > div:first-child,
       #chapter-6 .nav-ctrl-btn, #confetti-canvas, .crime-tape,
       .cert-preview-tip, .cert-preview-wrapper > div:last-child {
         display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        opacity: 0 !important;
       }
 
       #chapter-6 {
@@ -1746,16 +1756,20 @@
       }
 
       #certificate-print-zone .cert-school-logo {
-        height: 60px !important;
+        height: 80px !important;
+        max-width: 130px !important;
         width: auto !important;
+        object-fit: contain !important;
+        flex-shrink: 0 !important;
       }
 
       #certificate-print-zone .cert-mascot-img {
-        height: 72px !important;
-        width: 72px !important;
+        height: 86px !important;
+        width: 86px !important;
         border-radius: 50% !important;
-        border: 2.5px solid #D4AF37 !important;
+        border: 3px solid #D4AF37 !important;
         background: #FFF !important;
+        flex-shrink: 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
